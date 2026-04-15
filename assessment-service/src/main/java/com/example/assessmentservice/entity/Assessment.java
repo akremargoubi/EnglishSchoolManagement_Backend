@@ -5,10 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
-import java.time.LocalDateTime;
-
 @Entity
-@Table(name = "assessment")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -25,32 +22,11 @@ public class Assessment {
     @NotBlank(message = "Course name is required")
     private String courseName;
 
+    @NotNull(message = "Type is required")
     @Enumerated(EnumType.STRING)
-    @NotNull
     private AssessmentType type;
 
+    @NotNull(message = "Status is required")
     @Enumerated(EnumType.STRING)
-    @NotNull
     private AssessmentStatus status;
-
-    // ── Planning fields ────────────────────────────────────────────────────────
-    private LocalDateTime startDate;
-
-    private LocalDateTime endDate;
-
-    private Integer duration; // en minutes
-
-    // Champ calculé : retourne true si l'assessment est à venir
-    @Transient
-    public boolean isUpcoming() {
-        return startDate != null && startDate.isAfter(LocalDateTime.now());
-    }
-
-    // Champ calculé : retourne true si l'assessment est en cours
-    @Transient
-    public boolean isOngoing() {
-        LocalDateTime now = LocalDateTime.now();
-        return startDate != null && endDate != null
-                && startDate.isBefore(now) && endDate.isAfter(now);
-    }
 }

@@ -1,5 +1,4 @@
 services:
-
   mysql:
     image: mysql:8
     container_name: mysql-db
@@ -17,9 +16,26 @@ services:
     container_name: eureka-server
     ports:
       - "8761:8761"
+    environment:
+      EUREKA_CLIENT_REGISTER_WITH_EUREKA: "false"
+      EUREKA_CLIENT_FETCH_REGISTRY: "false"
+
+  gateway-service:
+    build: ./gateway-service
+    container_name: gateway-service
+    ports:
+      - "8080:8080"
+    depends_on:
+      - eureka-server
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
+      SPRING_APPLICATION_NAME: gateway-service
 
   resources-service:
-    build: ./resources-service
+    build:
+      context: ./resources-service
+      dockerfile: docker/Dockerfile
     container_name: resources-service
     ports:
       - "8096:8096"
@@ -27,22 +43,36 @@ services:
       - mysql
       - eureka-server
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/english_school_db
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/english_school_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
+      SPRING_APPLICATION_NAME: resources-service
 
   assessment-service:
-    build: ./assessment-service
+    build:
+      context: ./assessment-service
+      dockerfile: docker/Dockerfile
     container_name: assessment-service
     ports:
-      - "8095:8095"
+      - "8081:8081"
     depends_on:
       - mysql
       - eureka-server
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/english_school_db
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/english_school_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
+      SPRING_APPLICATION_NAME: assessment-service
+      SPRING_MAIL_HOST: smtp.gmail.com
+      SPRING_MAIL_PORT: "587"
+      SPRING_MAIL_USERNAME: placeholder@gmail.com
+      SPRING_MAIL_PASSWORD: placeholder
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "true"
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "true"
 
 volumes:
   mysql_data:

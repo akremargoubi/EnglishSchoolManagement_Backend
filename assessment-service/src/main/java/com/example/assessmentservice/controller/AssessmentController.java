@@ -10,6 +10,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/assessments")
+@CrossOrigin(origins = "http://localhost:4200")
 @RequiredArgsConstructor
 public class AssessmentController {
 
