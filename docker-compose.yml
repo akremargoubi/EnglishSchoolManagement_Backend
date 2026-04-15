@@ -1,9 +1,8 @@
 services:
 
-  # ── 1. Eureka Discovery Server ─────────────────────────────────────────────
+  # ── 1. Eureka ──────────────────────────────────────────────────────────────
   eureka-server:
     build: ./discovery-service
-    image: esm-eureka-server:latest
     container_name: eureka-server
     restart: unless-stopped
     ports:
@@ -11,8 +10,6 @@ services:
     environment:
       EUREKA_CLIENT_REGISTER_WITH_EUREKA: "false"
       EUREKA_CLIENT_FETCH_REGISTRY: "false"
-    networks:
-      - esm-net
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:8761/actuator/health || exit 1"]
       interval: 15s
@@ -20,7 +17,7 @@ services:
       retries: 5
       start_period: 40s
 
-  # ── 2. MySQL (shared by existing services) ─────────────────────────────────
+  # ── 2. MySQL ───────────────────────────────────────────────────────────────
   mysql:
     image: mysql:8
     container_name: mysql-db
@@ -32,8 +29,6 @@ services:
       MYSQL_DATABASE: english_school_db
     volumes:
       - mysql_data:/var/lib/mysql
-    networks:
-      - esm-net
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
       interval: 10s
@@ -41,7 +36,7 @@ services:
       retries: 5
       start_period: 30s
 
-  # ── 3. Auth PostgreSQL Database ────────────────────────────────────────────
+  # ── 3. Auth PostgreSQL ─────────────────────────────────────────────────────
   auth-db:
     image: postgres:16-alpine
     container_name: auth-db
@@ -54,8 +49,6 @@ services:
       POSTGRES_PASSWORD: authservicedbp4ss
     volumes:
       - auth-db-data:/var/lib/postgresql/data
-    networks:
-      - esm-net
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U authserviceuser -d esmauthdb"]
       interval: 10s
@@ -63,7 +56,7 @@ services:
       retries: 5
       start_period: 20s
 
-  # ── 4. Auth Microservice ───────────────────────────────────────────────────
+  # ── 4. Auth Service ────────────────────────────────────────────────────────
   auth-service:
     build: ./esmauthms
     image: esm-auth-service:latest
@@ -92,8 +85,6 @@ services:
       APP_STORAGE_AVATAR_DIR: /app/avatars
     volumes:
       - auth-avatars:/app/avatars
-    networks:
-      - esm-net
 
   # ── 5. Gateway Service ─────────────────────────────────────────────────────
   gateway-service:
@@ -109,8 +100,6 @@ services:
       SPRING_APPLICATION_NAME: gateway-service
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
       EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
-    networks:
-      - esm-net
 
   # ── 6. Resources Service ───────────────────────────────────────────────────
   resources-service:
@@ -123,7 +112,7 @@ services:
       - "8096:8096"
     depends_on:
       mysql:
-        condition: service_healthy
+        condition: service_healthy        # ← waits for MySQL to be READY
       eureka-server:
         condition: service_healthy
     environment:
@@ -133,8 +122,6 @@ services:
       SPRING_DATASOURCE_PASSWORD: root
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
       EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
-    networks:
-      - esm-net
 
   # ── 7. Assessment Service ──────────────────────────────────────────────────
   assessment-service:
@@ -147,7 +134,7 @@ services:
       - "8081:8081"
     depends_on:
       mysql:
-        condition: service_healthy
+        condition: service_healthy        # ← waits for MySQL to be READY
       eureka-server:
         condition: service_healthy
     environment:
@@ -163,14 +150,8 @@ services:
       SPRING_MAIL_PASSWORD: placeholder
       SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "true"
       SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "true"
-    networks:
-      - esm-net
 
 volumes:
   mysql_data:
   auth-db-data:
   auth-avatars:
-
-networks:
-  esm-net:
-    driver: bridge
