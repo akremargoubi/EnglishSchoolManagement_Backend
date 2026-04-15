@@ -1,0 +1,36 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql-reporting
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: pidev
+    ports:
+      - "3308:3306"
+    volumes:
+      - mysql_reporting_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  reporting-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: reporting-service
+    ports:
+      - "8085:8085"
+    environment:
+      SERVER_PORT: 8085
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/pidev?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      EUREKA_CLIENT_ENABLED: "false"
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+volumes:
+  mysql_reporting_data:
