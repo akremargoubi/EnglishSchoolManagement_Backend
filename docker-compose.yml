@@ -123,7 +123,7 @@ services:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
       EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
 
-  # ── 7. Assessment Service ──────────────────────────────────────────────────
+  # ── 7. Assessment Service -──────────────────────────────────────────────────
   assessment-service:
     build:
       context: ./assessment-service
