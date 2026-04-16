@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
+
+    <!-- 1. auth-db (PostgreSQL) -->
+    <data-source source="LOCAL" name="auth-db" uuid="11111111-0001-0001-0001-000000000001">
+      <driver-ref>postgresql</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
+      <jdbc-url>jdbc:postgresql://localhost:5433/esmauthdb</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
+      <user-name>authserviceuser</user-name>
+      <user-password>authservicedbp4ss</user-password>
+    </data-source>
+
+    <!-- 2. enrollment-db (PostgreSQL) -->
+    <data-source source="LOCAL" name="enrollment-db" uuid="11111111-0002-0002-0002-000000000002">
+      <driver-ref>postgresql</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
+      <jdbc-url>jdbc:postgresql://localhost:5434/enrollmentsdb</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
+      <user-name>esm</user-name>
+      <user-password>esmsecret</user-password>
+    </data-source>
+
+    <!-- 3. course-db (PostgreSQL) -->
+    <data-source source="LOCAL" name="course-db" uuid="11111111-0003-0003-0003-000000000003">
+      <driver-ref>postgresql</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
+      <jdbc-url>jdbc:postgresql://localhost:5435/coursesdb</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
+      <user-name>esm</user-name>
+      <user-password>esmsecret</user-password>
+    </data-source>
+
+    <!-- 4. attendance-db (PostgreSQL) -->
+    <data-source source="LOCAL" name="attendance-db" uuid="11111111-0004-0004-0004-000000000004">
+      <driver-ref>postgresql</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
+      <jdbc-url>jdbc:postgresql://localhost:5436/attendance_db</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
+      <user-name>esm</user-name>
+      <user-password>esmsecret</user-password>
+    </data-source>
+
+    <!-- 5. schedule-db (PostgreSQL) -->
+    <data-source source="LOCAL" name="schedule-db" uuid="11111111-0005-0005-0005-000000000005">
+      <driver-ref>postgresql</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
+      <jdbc-url>jdbc:postgresql://localhost:5437/schedule_db</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
+      <user-name>esm</user-name>
+      <user-password>esmsecret</user-password>
+    </data-source>
+
+    <!-- 6. resources-db (MySQL) -->
+    <data-source source="LOCAL" name="resources-db" uuid="22222222-0006-0006-0006-000000000006">
+      <driver-ref>mysql.8</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>com.mysql.cj.jdbc.Driver</jdbc-driver>
+      <jdbc-url>jdbc:mysql://localhost:3307/resources_db</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
+      <user-name>root</user-name>
+      <user-password>root</user-password>
+    </data-source>
+
+    <!-- 7. assessment-db (MySQL) -->
+    <data-source source="LOCAL" name="assessment-db" uuid="22222222-0007-0007-0007-000000000007">
+      <driver-ref>mysql.8</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>com.mysql.cj.jdbc.Driver</jdbc-driver>
+      <jdbc-url>jdbc:mysql://localhost:3308/assessment_db</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
+      <user-name>root</user-name>
+      <user-password>root</user-password>
+    </data-source>
+
+    <!-- 8. payment-db (MySQL) -->
+    <data-source source="LOCAL" name="payment-db" uuid="22222222-0008-0008-0008-000000000008">
+      <driver-ref>mysql.8</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>com.mysql.cj.jdbc.Driver</jdbc-driver>
+      <jdbc-url>jdbc:mysql://localhost:3309/payment_db</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
+      <user-name>root</user-name>
+      <user-password>root</user-password>
+    </data-source>
+
+    <!-- 9. reporting-db (MySQL) -->
+    <data-source source="LOCAL" name="reporting-db" uuid="22222222-0009-0009-0009-000000000009">
+      <driver-ref>mysql.8</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>com.mysql.cj.jdbc.Driver</jdbc-driver>
+      <jdbc-url>jdbc:mysql://localhost:3310/reporting_db</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
+      <user-name>root</user-name>
+      <user-password>root</user-password>
+    </data-source>
+
+  </component>
+</project>

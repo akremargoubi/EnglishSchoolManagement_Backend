@@ -3,6 +3,7 @@ package com.esprit.esmauthms.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -16,7 +17,9 @@ import java.util.Map;
 public class EmailClient {
 
     private final RestTemplate restTemplate = new RestTemplate();
-    private static final String EMAIL_SERVICE_URL = "http://localhost:2001/api/emails/send";
+
+    @Value("${email.service.url:http://localhost:2001/api/emails/send}")
+    private String emailServiceUrl;
 
     public void sendEmail(String to, String subject, String text) {
         try {
@@ -27,18 +30,12 @@ public class EmailClient {
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-
             HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
 
             ResponseEntity<String> response = restTemplate.exchange(
-                    EMAIL_SERVICE_URL,
-                    HttpMethod.POST,
-                    request,
-                    String.class
-            );
+                emailServiceUrl, HttpMethod.POST, request, String.class);
 
-            log.info("Email service response: status={}, body={}",
-                    response.getStatusCode(), response.getBody());
+            log.info("Email service response: status={}, body={}", response.getStatusCode(), response.getBody());
         } catch (Exception e) {
             log.error("Failed to send email via email microservice", e);
         }

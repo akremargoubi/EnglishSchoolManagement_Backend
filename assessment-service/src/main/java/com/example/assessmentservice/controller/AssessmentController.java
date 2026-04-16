@@ -31,6 +31,15 @@ public class AssessmentController {
         return service.getById(id);
     }
 
+    /**
+     * Retourne les assessments d'une classe spécifique.
+     * Appelé par le dashboard étudiant : GET /api/assessments/class/TWIN1
+     */
+    @GetMapping("/class/{className}")
+    public List<Assessment> getByClassName(@PathVariable String className) {
+        return service.getByClassName(className);
+    }
+
     @PutMapping("/{id}")
     public Assessment update(@PathVariable Long id,
                              @Valid @RequestBody Assessment assessment) {

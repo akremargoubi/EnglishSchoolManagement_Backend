@@ -1,26 +1,26 @@
-# ── Stage 1: Build (uses Maven from image — no mvnw needed) ──────────────
+# ── Stage 1: Build ────────────────────────────────────────────────
 FROM maven:3.9.6-eclipse-temurin-17-alpine AS builder
 
 WORKDIR /app
 
-# Copy POM first — Docker caches dependencies layer
 COPY pom.xml ./
 RUN mvn dependency:go-offline -B
 
-# Copy source and build
 COPY src ./src
 RUN mvn package -DskipTests -B
 
-# ── Stage 2: Runtime ──────────────────────────────────────────────────────
+# ── Stage 2: Runtime ──────────────────────────────────────────────
 FROM eclipse-temurin:17-jre-alpine AS runtime
 
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 WORKDIR /app
 
+RUN mkdir -p /app/avatars && chown -R appuser:appgroup /app
+
 COPY --from=builder /app/target/*.jar app.jar
 
 USER appuser
-EXPOSE 8761
+EXPOSE 1999
 
 ENTRYPOINT ["java", \
   "-XX:+UseContainerSupport", \

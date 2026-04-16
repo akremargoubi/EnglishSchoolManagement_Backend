@@ -45,8 +45,7 @@ public class PaymentService {
             emailService.sendEmail(clientEmail, subject, body);
         } catch (Exception e) {
             logger.error("Payment cancelled because email sending failed for paymentId={}", saved.getPaymentId(), e);
-            throw new RuntimeException("Payment failed: confirmation email could not be sent.", e);
-        }
+            }
         return saved;
     }
 
@@ -78,5 +77,4 @@ public class PaymentService {
     public List<PaymentEntity> findByStudent(Long studentId) {
         return repository.findByStudentId(studentId);
     }
-    
 }
