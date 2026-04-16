@@ -1,22 +1,52 @@
 package com.example.assessmentservice.service;
 
+import com.example.assessmentservice.client.CertificateServiceClient;
 import com.example.assessmentservice.entity.Grade;
 import com.example.assessmentservice.repository.GradeRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class GradeService {
 
     private final GradeRepository gradeRepository;
+    private final CertificateServiceClient certificateClient;
+
+    // Seuil de réussite : 50%
+    private static final double PASS_THRESHOLD = 0.50;
 
     // ── CRUD ───────────────────────────────────────────────────────────────────
+
     public Grade create(Grade grade) {
-        return gradeRepository.save(grade);
+        Grade saved = gradeRepository.save(grade);
+
+        // Déclenche la génération du certificat si l'étudiant a réussi
+        if (saved.getMaxScore() != null && saved.getMaxScore() > 0
+                && (saved.getScore() / saved.getMaxScore()) >= PASS_THRESHOLD) {
+
+            log.info("🎓 Étudiant {} a réussi avec {}/{}. Génération du certificat...",
+                    saved.getStudentName(), saved.getScore(), saved.getMaxScore());
+
+            certificateClient.generateCertificateAsync(
+                    new CertificateServiceClient.CertificateRequest(
+                            saved.getStudentName(),
+                            saved.getStudentEmail(),
+                            "Assessment #" + saved.getAssessmentId(),
+                            saved.getScore(),
+                            saved.getMaxScore(),
+                            Instant.now().toString()
+                    )
+            );
+        }
+
+        return saved;
     }
 
     public List<Grade> getAll() {
@@ -51,6 +81,7 @@ public class GradeService {
     }
 
     // ── Statistics ─────────────────────────────────────────────────────────────
+
     public Map<String, Object> getStatsByAssessment(Long assessmentId) {
         List<Grade> grades = gradeRepository.findByAssessmentId(assessmentId);
         long total   = grades.size();
@@ -69,13 +100,9 @@ public class GradeService {
 
     // ── Leaderboard ────────────────────────────────────────────────────────────
 
-    /**
-     * Global leaderboard — average percentage across ALL assessments per student
-     */
     public List<Map<String, Object>> getGlobalLeaderboard() {
         List<Grade> all = gradeRepository.findAll();
 
-        // Group by student email
         Map<String, List<Grade>> byStudent = all.stream()
                 .collect(Collectors.groupingBy(Grade::getStudentEmail));
 
@@ -103,11 +130,9 @@ public class GradeService {
             leaderboard.add(entry);
         });
 
-        // Sort by averagePercentage descending
         leaderboard.sort((a, b) ->
                 Double.compare((Double) b.get("averagePercentage"), (Double) a.get("averagePercentage")));
 
-        // Add rank
         for (int i = 0; i < leaderboard.size(); i++) {
             leaderboard.get(i).put("rank", i + 1);
         }
@@ -115,9 +140,6 @@ public class GradeService {
         return leaderboard;
     }
 
-    /**
-     * Leaderboard for a specific assessment
-     */
     public List<Map<String, Object>> getLeaderboardByAssessment(Long assessmentId) {
         List<Grade> grades = gradeRepository.findByAssessmentId(assessmentId);
 
@@ -138,7 +160,6 @@ public class GradeService {
                 })
                 .collect(Collectors.toList());
 
-        // Add rank
         for (int i = 0; i < leaderboard.size(); i++) {
             leaderboard.get(i).put("rank", i + 1);
         }

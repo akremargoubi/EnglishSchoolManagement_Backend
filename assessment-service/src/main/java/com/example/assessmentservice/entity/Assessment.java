@@ -29,4 +29,11 @@ public class Assessment {
     @NotNull(message = "Status is required")
     @Enumerated(EnumType.STRING)
     private AssessmentStatus status;
+
+    // Groupe d'étudiants ciblé (ex: "TWIN1", "TWIN2", "DS3", etc.)
+    private String className;
+
+    private String startDate;
+    private String endDate;
+    private Integer duration;
 }

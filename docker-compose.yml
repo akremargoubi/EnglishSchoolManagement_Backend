@@ -1,6 +1,5 @@
 services:
 
-
   # ── 1. Eureka ──────────────────────────────────────────────────────────────
   eureka-server:
     build: ./discovery-service
@@ -255,6 +254,8 @@ services:
       EUREKA_INSTANCE_INSTANCE_ID: auth-service:1999
       EMAIL_SERVICE_URL: http://email-service:2001/api/emails/send
       APP_STORAGE_AVATAR_DIR: /app/avatars
+      # 🆕 Change context path to / so gateway can forward /api/classes correctly
+      SERVER_SERVLET_CONTEXT_PATH: /
     volumes:
       - auth-avatars:/app/avatars
     networks:
@@ -307,6 +308,8 @@ services:
         condition: service_healthy
       eureka-server:
         condition: service_healthy
+      certificate-service:
+        condition: service_healthy
     environment:
       SPRING_APPLICATION_NAME: assessment-service
       SPRING_DATASOURCE_URL: jdbc:mysql://assessment-db:3306/assessment_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
@@ -326,6 +329,7 @@ services:
       SPRING_MAIL_PASSWORD: placeholder
       SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "true"
       SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "true"
+      CERTIFICATE_SERVICE_URL: http://certificate-service:8097
     networks:
       - esm-net
 
@@ -540,7 +544,28 @@ services:
       - esm-net
 
 
-  # ── 20. Gateway Service (ALWAYS LAST) ──────────────────────────────────────
+  # ── 20. Certificate Service (FastAPI Python) ───────────────────────────────
+  certificate-service:
+    build:
+      context: ./certificate-service
+      dockerfile: Dockerfile
+    container_name: certificate-service
+    restart: unless-stopped
+    ports:
+      - "8097:8097"
+    volumes:
+      - certificate_data:/app/certificates
+    networks:
+      - esm-net
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8097/health')\" || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+
+  # ── 21. Gateway Service (ALWAYS LAST) ──────────────────────────────────────
   gateway-service:
     build: ./gateway-service
     container_name: gateway-service
@@ -576,6 +601,7 @@ volumes:
   assessment-db-data:
   payment-db-data:
   reporting-db-data:
+  certificate_data:
 
 
 networks:

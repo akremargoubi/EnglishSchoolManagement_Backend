@@ -1,4 +1,3 @@
-// src/main/java/com/esprit/esmauthms/entity/User.java
 package com.esprit.esmauthms.entity;
 
 import jakarta.persistence.*;
@@ -24,7 +23,6 @@ public class User {
     @Column(name = "id", updatable = false, nullable = false)
     private UUID id;
 
-    // Business identifier
     @Column(name = "uuid", unique = true, nullable = false, updatable = false)
     private String uuid;
 
@@ -37,40 +35,30 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    // simple string for role
     @Column(nullable = false)
     @Builder.Default
     private String role = "USER";
 
     private String firstName;
     private String lastName;
-
     private String avatarUrl;
-
     private String phoneNumber;
-
     private String address;
-
-    // simple string for status (e.g. ACTIVE, INACTIVE, SUSPENDED)
     private String status;
 
+    // 🆕 Relation vers la classe de l'étudiant
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "class_id")
+    private StudentClass studentClass;
+
     private boolean isEmailVerified;
-
     private boolean twoFactorEnabled;
-
     private String twoFactorSecret;
-
     private String twoFactorCode;
-
     private LocalDateTime twoFactorCodeExpiresAt;
-
     private String passwordResetToken;
-
     private LocalDateTime passwordResetExpiresAt;
-
-    // NEW: email verification token + expiry
     private String emailVerificationToken;
-
     private LocalDateTime emailVerificationExpiresAt;
 
     @CreationTimestamp
@@ -82,7 +70,6 @@ public class User {
     private Instant updatedAt;
 
     private LocalDateTime lastLoginAt;
-
     private LocalDateTime deletedAt;
 
     @PrePersist

@@ -26,14 +26,25 @@ public class AssessmentService {
                 .orElseThrow(() -> new RuntimeException("Assessment not found with id " + id));
     }
 
-    public Assessment update(Long id, Assessment updatedAssessment) {
+    /**
+     * Retourne tous les assessments d'une classe spécifique.
+     * Utilisé par le dashboard étudiant pour filtrer par className.
+     */
+    public List<Assessment> getByClassName(String className) {
+        return repository.findByClassName(className);
+    }
 
+    public Assessment update(Long id, Assessment updatedAssessment) {
         Assessment existing = getById(id);
 
         existing.setTitle(updatedAssessment.getTitle());
         existing.setCourseName(updatedAssessment.getCourseName());
         existing.setType(updatedAssessment.getType());
         existing.setStatus(updatedAssessment.getStatus());
+        existing.setClassName(updatedAssessment.getClassName());
+        existing.setStartDate(updatedAssessment.getStartDate());
+        existing.setEndDate(updatedAssessment.getEndDate());
+        existing.setDuration(updatedAssessment.getDuration());
 
         return repository.save(existing);
     }

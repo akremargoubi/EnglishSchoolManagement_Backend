@@ -3,6 +3,7 @@ package com.esprit.esmauthms.exception;
 import com.esprit.esmauthms.dto.ApiError;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -14,6 +15,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -66,6 +68,8 @@ public class GlobalExceptionHandler {
             RuntimeException ex,
             HttpServletRequest request
     ) {
+        log.error("RuntimeException at {}: {}", request.getRequestURI(), ex.getMessage(), ex);
+
         ApiError error = ApiError.builder()
                 .timestamp(Instant.now())
                 .status(HttpStatus.BAD_REQUEST.value())
@@ -82,11 +86,14 @@ public class GlobalExceptionHandler {
             Exception ex,
             HttpServletRequest request
     ) {
+        // 🆕 Log l'erreur complète avec stack trace
+        log.error("Unexpected error at {}: {}", request.getRequestURI(), ex.getMessage(), ex);
+
         ApiError error = ApiError.builder()
                 .timestamp(Instant.now())
                 .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
                 .error(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())
-                .message("Unexpected error")
+                .message(ex.getMessage()) // 🆕 Message réel au lieu de "Unexpected error"
                 .path(request.getRequestURI())
                 .build();
 

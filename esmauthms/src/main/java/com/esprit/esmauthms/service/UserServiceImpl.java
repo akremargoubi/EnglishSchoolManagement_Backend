@@ -20,7 +20,7 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
 
     private UserResponseDto toDto(User user) {
-        return UserResponseDto.builder()
+        UserResponseDto.UserResponseDtoBuilder builder = UserResponseDto.builder()
                 .id(user.getId())
                 .uuid(user.getUuid())
                 .cin(user.getCin())
@@ -37,8 +37,18 @@ public class UserServiceImpl implements UserService {
                 .createdAt(user.getCreatedAt())
                 .updatedAt(user.getUpdatedAt())
                 .lastLoginAt(user.getLastLoginAt())
-                .deletedAt(user.getDeletedAt())
-                .build();
+                .deletedAt(user.getDeletedAt());
+
+        // 🆕 Mappe la classe si l'étudiant en a une
+        if (user.getStudentClass() != null) {
+            builder
+                    .classId(user.getStudentClass().getId())
+                    .className(user.getStudentClass().getName())
+                    .classLevel(user.getStudentClass().getLevel())
+                    .classSpecialty(user.getStudentClass().getSpecialty());
+        }
+
+        return builder.build();
     }
 
     @Override
@@ -73,14 +83,14 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (request.getCin() != null) user.setCin(request.getCin());
-        if (request.getEmail() != null) user.setEmail(request.getEmail());
-        if (request.getFirstName() != null) user.setFirstName(request.getFirstName());
-        if (request.getLastName() != null) user.setLastName(request.getLastName());
+        if (request.getCin() != null)         user.setCin(request.getCin());
+        if (request.getEmail() != null)       user.setEmail(request.getEmail());
+        if (request.getFirstName() != null)   user.setFirstName(request.getFirstName());
+        if (request.getLastName() != null)    user.setLastName(request.getLastName());
         if (request.getPhoneNumber() != null) user.setPhoneNumber(request.getPhoneNumber());
-        if (request.getAddress() != null) user.setAddress(request.getAddress());
-        if (request.getStatus() != null) user.setStatus(request.getStatus());
-        if (request.getRole() != null) user.setRole(request.getRole());
+        if (request.getAddress() != null)     user.setAddress(request.getAddress());
+        if (request.getStatus() != null)      user.setStatus(request.getStatus());
+        if (request.getRole() != null)        user.setRole(request.getRole());
 
         User saved = userRepository.save(user);
         return toDto(saved);
@@ -96,16 +106,15 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Page<UserResponseDto> searchUsers(UserSearchCriteria criteria, Pageable pageable) {
-        String email = criteria.getEmail() != null ? criteria.getEmail() : "";
-        String firstName = criteria.getFirstName() != null ? criteria.getFirstName() : "";
-        String lastName = criteria.getLastName() != null ? criteria.getLastName() : "";
-        String cin = criteria.getCin() != null ? criteria.getCin() : "";
-        String phone = criteria.getPhoneNumber() != null ? criteria.getPhoneNumber() : "";
+        String email     = criteria.getEmail()       != null ? criteria.getEmail()       : "";
+        String firstName = criteria.getFirstName()   != null ? criteria.getFirstName()   : "";
+        String lastName  = criteria.getLastName()    != null ? criteria.getLastName()    : "";
+        String cin       = criteria.getCin()         != null ? criteria.getCin()         : "";
+        String phone     = criteria.getPhoneNumber() != null ? criteria.getPhoneNumber() : "";
 
         Page<User> page = userRepository
                 .findByEmailContainingIgnoreCaseAndFirstNameContainingIgnoreCaseAndLastNameContainingIgnoreCaseAndCinContainingAndPhoneNumberContaining(
-                        email, firstName, lastName, cin, phone, pageable
-                );
+                        email, firstName, lastName, cin, phone, pageable);
 
         return new PageImpl<>(
                 page.getContent().stream().map(this::toDto).collect(Collectors.toList()),
@@ -119,13 +128,13 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(currentUserId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (request.getCin() != null) user.setCin(request.getCin());
-        if (request.getEmail() != null) user.setEmail(request.getEmail());
-        if (request.getFirstName() != null) user.setFirstName(request.getFirstName());
-        if (request.getLastName() != null) user.setLastName(request.getLastName());
+        if (request.getCin() != null)         user.setCin(request.getCin());
+        if (request.getEmail() != null)       user.setEmail(request.getEmail());
+        if (request.getFirstName() != null)   user.setFirstName(request.getFirstName());
+        if (request.getLastName() != null)    user.setLastName(request.getLastName());
         if (request.getPhoneNumber() != null) user.setPhoneNumber(request.getPhoneNumber());
-        if (request.getAddress() != null) user.setAddress(request.getAddress());
-        if (request.getStatus() != null) user.setStatus(request.getStatus());
+        if (request.getAddress() != null)     user.setAddress(request.getAddress());
+        if (request.getStatus() != null)      user.setStatus(request.getStatus());
 
         User saved = userRepository.save(user);
         return toDto(saved);

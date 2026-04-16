@@ -28,4 +28,10 @@ public class UserResponseDto {
     private Instant updatedAt;
     private LocalDateTime lastLoginAt;
     private LocalDateTime deletedAt;
+
+    // 🆕 Classe de l'étudiant
+    private Long classId;
+    private String className;
+    private String classLevel;
+    private String classSpecialty;
 }
