@@ -1,5 +1,6 @@
 services:
 
+
   # ── 1. Eureka ──────────────────────────────────────────────────────────────
   eureka-server:
     build: ./discovery-service
@@ -20,28 +21,8 @@ services:
     networks:
       - esm-net
 
-  # ── 2. MySQL ───────────────────────────────────────────────────────────────
-  mysql:
-    image: mysql:8
-    container_name: mysql-db
-    restart: unless-stopped
-    ports:
-      - "3306:3306"
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: english_school_db
-    volumes:
-      - mysql_data:/var/lib/mysql
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
-    networks:
-      - esm-net
 
-  # ── 3. Auth PostgreSQL ─────────────────────────────────────────────────────
+  # ── 2. Auth PostgreSQL ─────────────────────────────────────────────────────
   auth-db:
     image: postgres:16-alpine
     container_name: auth-db
@@ -63,7 +44,8 @@ services:
     networks:
       - esm-net
 
-  # ── 4. Enrollment PostgreSQL ───────────────────────────────────────────────
+
+  # ── 3. Enrollment PostgreSQL ───────────────────────────────────────────────
   enrollment-db:
     image: postgres:16-alpine
     container_name: enrollment-db
@@ -85,7 +67,8 @@ services:
     networks:
       - esm-net
 
-  # ── 5. Course PostgreSQL ───────────────────────────────────────────────────
+
+  # ── 4. Course PostgreSQL ───────────────────────────────────────────────────
   course-db:
     image: postgres:16-alpine
     container_name: course-db
@@ -107,7 +90,8 @@ services:
     networks:
       - esm-net
 
-  # ── 6. Attendance PostgreSQL ───────────────────────────────────────────────
+
+  # ── 5. Attendance PostgreSQL ───────────────────────────────────────────────
   attendance-db:
     image: postgres:16-alpine
     container_name: attendance-db
@@ -129,7 +113,8 @@ services:
     networks:
       - esm-net
 
-  # ── 7. Schedule PostgreSQL ─────────────────────────────────────────────────
+
+  # ── 6. Schedule PostgreSQL ─────────────────────────────────────────────────
   schedule-db:
     image: postgres:16-alpine
     container_name: schedule-db
@@ -151,7 +136,96 @@ services:
     networks:
       - esm-net
 
-  # ── 8. Auth Service ────────────────────────────────────────────────────────
+
+  # ── 7. Resources MySQL ─────────────────────────────────────────────────────
+  resources-db:
+    image: mysql:8
+    container_name: resources-db
+    restart: unless-stopped
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: resources_db
+    volumes:
+      - resources-db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - esm-net
+
+
+  # ── 8. Assessment MySQL ────────────────────────────────────────────────────
+  assessment-db:
+    image: mysql:8
+    container_name: assessment-db
+    restart: unless-stopped
+    ports:
+      - "3308:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: assessment_db
+    volumes:
+      - assessment-db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - esm-net
+
+
+  # ── 9. Payment MySQL ───────────────────────────────────────────────────────
+  payment-db:
+    image: mysql:8
+    container_name: payment-db
+    restart: unless-stopped
+    ports:
+      - "3309:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: payment_db
+    volumes:
+      - payment-db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - esm-net
+
+
+  # ── 10. Reporting MySQL ────────────────────────────────────────────────────
+  reporting-db:
+    image: mysql:8
+    container_name: reporting-db
+    restart: unless-stopped
+    ports:
+      - "3310:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: reporting_db
+    volumes:
+      - reporting-db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - esm-net
+
+
+  # ── 11. Auth Service ───────────────────────────────────────────────────────
   auth-service:
     build: ./esmauthms
     image: esm-auth-service:latest
@@ -186,7 +260,8 @@ services:
     networks:
       - esm-net
 
-  # ── 9. Resources Service ───────────────────────────────────────────────────
+
+  # ── 12. Resources Service ──────────────────────────────────────────────────
   resources-service:
     build:
       context: ./resources-service
@@ -196,14 +271,14 @@ services:
     ports:
       - "8096:8096"
     depends_on:
-      mysql:
+      resources-db:
         condition: service_healthy
       eureka-server:
         condition: service_healthy
     environment:
       SPRING_APPLICATION_NAME: resources-service
       SERVER_PORT: "8096"
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/english_school_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_URL: jdbc:mysql://resources-db:3306/resources_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
       EUREKA_CLIENT_ENABLED: "true"
@@ -217,7 +292,8 @@ services:
     networks:
       - esm-net
 
-  # ── 10. Assessment Service ─────────────────────────────────────────────────
+
+  # ── 13. Assessment Service ─────────────────────────────────────────────────
   assessment-service:
     build:
       context: ./assessment-service
@@ -227,13 +303,13 @@ services:
     ports:
       - "8081:8081"
     depends_on:
-      mysql:
+      assessment-db:
         condition: service_healthy
       eureka-server:
         condition: service_healthy
     environment:
       SPRING_APPLICATION_NAME: assessment-service
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/english_school_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_URL: jdbc:mysql://assessment-db:3306/assessment_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
       EUREKA_CLIENT_ENABLED: "true"
@@ -253,7 +329,8 @@ services:
     networks:
       - esm-net
 
-  # ── 11. Payment Service ────────────────────────────────────────────────────
+
+  # ── 14. Payment Service ────────────────────────────────────────────────────
   payment-service:
     build: ./payment_Microsevices
     container_name: payment-service
@@ -261,14 +338,14 @@ services:
     ports:
       - "8083:8083"
     depends_on:
-      mysql:
+      payment-db:
         condition: service_healthy
       eureka-server:
         condition: service_healthy
     environment:
       SPRING_APPLICATION_NAME: payment-service
       SERVER_PORT: "8083"
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/pidev?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_URL: jdbc:mysql://payment-db:3306/payment_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
       EUREKA_CLIENT_ENABLED: "true"
@@ -288,7 +365,8 @@ services:
     networks:
       - esm-net
 
-  # ── 12. Reporting Service ──────────────────────────────────────────────────
+
+  # ── 15. Reporting Service ──────────────────────────────────────────────────
   reporting-service:
     build: ./reporting-service
     container_name: reporting-service
@@ -296,14 +374,14 @@ services:
     ports:
       - "8085:8085"
     depends_on:
-      mysql:
+      reporting-db:
         condition: service_healthy
       eureka-server:
         condition: service_healthy
     environment:
       SPRING_APPLICATION_NAME: reporting-service
       SERVER_PORT: "8085"
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/pidev?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_URL: jdbc:mysql://reporting-db:3306/reporting_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
       EUREKA_CLIENT_ENABLED: "true"
@@ -317,7 +395,8 @@ services:
     networks:
       - esm-net
 
-  # ── 13. Enrollment Service ─────────────────────────────────────────────────
+
+  # ── 16. Enrollment Service ─────────────────────────────────────────────────
   enrollment-service:
     build: ./enrollment-service
     container_name: enrollment-service
@@ -353,7 +432,8 @@ services:
     networks:
       - esm-net
 
-  # ── 14. Course Service ─────────────────────────────────────────────────────
+
+  # ── 17. Course Service ─────────────────────────────────────────────────────
   course-service:
     build: ./course-service
     container_name: course-service
@@ -391,7 +471,8 @@ services:
     networks:
       - esm-net
 
-  # ── 15. Attendance Service ─────────────────────────────────────────────────
+
+  # ── 18. Attendance Service ─────────────────────────────────────────────────
   attendance-service:
     build: ./attendance-service
     container_name: attendance-service
@@ -424,7 +505,8 @@ services:
     networks:
       - esm-net
 
-  # ── 16. Schedule Service ───────────────────────────────────────────────────
+
+  # ── 19. Schedule Service ───────────────────────────────────────────────────
   schedule-service:
     build: ./schedule-service
     container_name: schedule-service
@@ -457,7 +539,8 @@ services:
     networks:
       - esm-net
 
-  # ── 17. Gateway Service (ALWAYS LAST) ──────────────────────────────────────
+
+  # ── 20. Gateway Service (ALWAYS LAST) ──────────────────────────────────────
   gateway-service:
     build: ./gateway-service
     container_name: gateway-service
@@ -481,14 +564,19 @@ services:
     networks:
       - esm-net
 
+
 volumes:
-  mysql_data:
   auth-db-data:
   auth-avatars:
   enrollment-db-data:
   course-db-data:
   attendance-db-data:
   schedule-db-data:
+  resources-db-data:
+  assessment-db-data:
+  payment-db-data:
+  reporting-db-data:
+
 
 networks:
   esm-net:
