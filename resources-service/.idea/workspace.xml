@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="928faa79-4f77-460f-a48c-539ca4857d01" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/../backend/assessment-service/docker/Dockerfile" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../backend/resources-service/docker/Dockerfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../backend/resources-service/Dockerfile" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="CodeInsightWorkspaceSettings">
+    <option name="optimizeImportsOnTheFly" value="true" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+        <option value="Dockerfile" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 4
+}</component>
+  <component name="ProjectId" id="39TVZq0muW3I6tJTwTYyASv9AK6" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RequestMappingsPanelOrder0": "0",
+    "RequestMappingsPanelOrder1": "1",
+    "RequestMappingsPanelWidth0": "75",
+    "RequestMappingsPanelWidth1": "75",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "git-widget-placeholder": "<unknown>",
+    "last_opened_file_path": "C:/Users/Firas/Pidev/backend/assessment-service",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "project.structure.last.edited": "Project",
+    "project.structure.proportion": "0.0",
+    "project.structure.side.proportion": "0.2",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="ReactorSettings">
+    <option name="notificationShown" value="true" />
+  </component>
+  <component name="RunManager" selected="Spring Boot.Application">
+    <configuration name="LearningResourceServiceTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="resources-service" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.englishschool.resourcesservice.service.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="com.englishschool.resourcesservice.service" />
+      <option name="MAIN_CLASS_NAME" value="com.englishschool.resourcesservice.service.LearningResourceServiceTest" />
+      <option name="TEST_OBJECT" value="class" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Application" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+      <module name="resources-service" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="com.englishschool.resourcesservice.Application" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="JUnit.LearningResourceServiceTest" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="928faa79-4f77-460f-a48c-539ca4857d01" name="Changes" comment="" />
+      <created>1770720107338</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1770720107338</updated>
+      <workItem from="1770720108388" duration="1630000" />
+      <workItem from="1770840282964" duration="745000" />
+      <workItem from="1770848615944" duration="113000" />
+      <workItem from="1770850030904" duration="47000" />
+      <workItem from="1770885064400" duration="1028000" />
+      <workItem from="1770886831574" duration="30000" />
+      <workItem from="1770891060244" duration="2241000" />
+      <workItem from="1770979814277" duration="656000" />
+      <workItem from="1771322843057" duration="1223000" />
+      <workItem from="1771327458846" duration="665000" />
+      <workItem from="1771433685880" duration="593000" />
+      <workItem from="1771434801604" duration="572000" />
+      <workItem from="1771450708032" duration="6380000" />
+      <workItem from="1771592469889" duration="6208000" />
+      <workItem from="1771966968216" duration="303000" />
+      <workItem from="1771969855598" duration="5023000" />
+      <workItem from="1771975875459" duration="330000" />
+      <workItem from="1771976405093" duration="8000" />
+      <workItem from="1771978613271" duration="5000" />
+      <workItem from="1772019455352" duration="8835000" />
+      <workItem from="1772552980870" duration="18000" />
+      <workItem from="1772553205216" duration="6000" />
+      <workItem from="1772553238100" duration="361000" />
+      <workItem from="1772553717700" duration="683000" />
+      <workItem from="1772620332538" duration="5595000" />
+      <workItem from="1772799600932" duration="1196000" />
+      <workItem from="1775118876809" duration="2453000" />
+      <workItem from="1775652596289" duration="783000" />
+      <workItem from="1776088236217" duration="4481000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="com.apollographql.ijplugin.settings.ProjectSettingsState">
+    <option name="hasEnabledGraphQLPluginApolloKotlinSupport" value="true" />
+    <option name="telemetryInstanceId" value="c912d416-e1a0-46a9-8d82-a270590f740c" />
+  </component>
+</project>
