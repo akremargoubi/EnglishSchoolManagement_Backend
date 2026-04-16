@@ -66,7 +66,30 @@ services:
       - esm-net
 
 
-  # ── 4. Auth Service ────────────────────────────────────────────────────────
+  # ── 4. Enrollment PostgreSQL ───────────────────────────────────────────────
+  enrollment-db:
+    image: postgres:16-alpine
+    container_name: enrollment-db
+    restart: unless-stopped
+    ports:
+      - "5434:5432"
+    environment:
+      POSTGRES_DB: enrollmentsdb
+      POSTGRES_USER: esm
+      POSTGRES_PASSWORD: esmsecret
+    volumes:
+      - enrollment-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U esm -d enrollmentsdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks:
+      - esm-net
+
+
+  # ── 5. Auth Service ────────────────────────────────────────────────────────
   auth-service:
     build: ./esmauthms
     image: esm-auth-service:latest
@@ -101,7 +124,7 @@ services:
       - esm-net
 
 
-  # ── 5. Resources Service ───────────────────────────────────────────────────
+  # ── 6. Resources Service ───────────────────────────────────────────────────
   resources-service:
     build:
       context: ./resources-service
@@ -131,7 +154,7 @@ services:
       - esm-net
 
 
-  # ── 6. Assessment Service ──────────────────────────────────────────────────
+  # ── 7. Assessment Service ──────────────────────────────────────────────────
   assessment-service:
     build:
       context: ./assessment-service
@@ -167,7 +190,7 @@ services:
       - esm-net
 
 
-  # ── 7. Payment Service ─────────────────────────────────────────────────────
+  # ── 8. Payment Service ─────────────────────────────────────────────────────
   payment-service:
     build: ./payment_Microsevices
     container_name: payment-service
@@ -202,7 +225,7 @@ services:
       - esm-net
 
 
-  # ── 8. Reporting Service ───────────────────────────────────────────────────
+  # ── 9. Reporting Service ───────────────────────────────────────────────────
   reporting-service:
     build: ./reporting-service
     container_name: reporting-service
@@ -231,7 +254,43 @@ services:
       - esm-net
 
 
-  # ── 9. Gateway Service (ALWAYS LAST) ───────────────────────────────────────
+  # ── 10. Enrollment Service ─────────────────────────────────────────────────
+  enrollment-service:
+    build: ./enrollment-service
+    container_name: enrollment-service
+    restart: unless-stopped
+    ports:
+      - "8084:8084"
+    depends_on:
+      enrollment-db:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    environment:
+      SPRING_APPLICATION_NAME: enrollment-service
+      SERVER_PORT: "8084"
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://enrollment-db:5432/enrollmentsdb
+      SPRING_DATASOURCE_USERNAME: esm
+      SPRING_DATASOURCE_PASSWORD: esmsecret
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_H2_CONSOLE_ENABLED: "false"
+      SPRING_AUTOCONFIGURE_EXCLUDE: org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
+      EUREKA_CLIENT_ENABLED: "true"
+      EUREKA_CLIENT_REGISTER_WITH_EUREKA: "true"
+      EUREKA_CLIENT_FETCH_REGISTRY: "true"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
+      EUREKA_INSTANCE_NONSECUREPORT: "8084"
+      EUREKA_INSTANCE_NONSECUREPORTENABLED: "true"
+      COURSE_SERVICE_URL: http://payment-service:8083
+    networks:
+      - esm-net
+
+
+  # ── 11. Gateway Service (ALWAYS LAST) ──────────────────────────────────────
   gateway-service:
     build: ./gateway-service
     container_name: gateway-service
@@ -248,10 +307,8 @@ services:
       EUREKA_CLIENT_FETCH_REGISTRY: "true"
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
       EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
-      # Faster registry sync — gateway picks up services quicker
       EUREKA_CLIENT_REGISTRY_FETCH_INTERVAL_SECONDS: "5"
       EUREKA_CLIENT_INITIAL_INSTANCE_INFO_REPLICATION_INTERVAL_SECONDS: "5"
-      # Auto-discover all Eureka-registered services
       SPRING_CLOUD_GATEWAY_DISCOVERY_LOCATOR_ENABLED: "true"
       SPRING_CLOUD_GATEWAY_DISCOVERY_LOCATOR_LOWER_CASE_SERVICE_ID: "true"
     networks:
@@ -262,6 +319,7 @@ volumes:
   mysql_data:
   auth-db-data:
   auth-avatars:
+  enrollment-db-data:
 
 networks:
   esm-net:
