@@ -8,6 +8,7 @@ services:
     ports:
       - "8761:8761"
     environment:
+      SPRING_APPLICATION_NAME: eureka-server
       EUREKA_CLIENT_REGISTER_WITH_EUREKA: "false"
       EUREKA_CLIENT_FETCH_REGISTRY: "false"
     healthcheck:
@@ -16,12 +17,15 @@ services:
       timeout: 5s
       retries: 5
       start_period: 40s
+    networks:
+      - esm-net
+
 
   # ── 2. MySQL ───────────────────────────────────────────────────────────────
   mysql:
     image: mysql:8
     container_name: mysql-db
-    restart: always
+    restart: unless-stopped
     ports:
       - "3306:3306"
     environment:
@@ -35,6 +39,9 @@ services:
       timeout: 5s
       retries: 5
       start_period: 30s
+    networks:
+      - esm-net
+
 
   # ── 3. Auth PostgreSQL ─────────────────────────────────────────────────────
   auth-db:
@@ -55,6 +62,9 @@ services:
       timeout: 5s
       retries: 5
       start_period: 20s
+    networks:
+      - esm-net
+
 
   # ── 4. Auth Service ────────────────────────────────────────────────────────
   auth-service:
@@ -79,14 +89,149 @@ services:
       JWT_ACCESS_TOKEN_EXPIRATION: 604800000
       APP_CORS_ALLOWED_ORIGINS: http://localhost:4200
       EUREKA_CLIENT_ENABLED: "true"
+      EUREKA_CLIENT_REGISTER_WITH_EUREKA: "true"
+      EUREKA_CLIENT_FETCH_REGISTRY: "true"
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
       EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
       EMAIL_SERVICE_URL: http://email-service:2001/api/emails/send
       APP_STORAGE_AVATAR_DIR: /app/avatars
     volumes:
       - auth-avatars:/app/avatars
+    networks:
+      - esm-net
 
-  # ── 5. Gateway Service ─────────────────────────────────────────────────────
+
+  # ── 5. Resources Service ───────────────────────────────────────────────────
+  resources-service:
+    build:
+      context: ./resources-service
+      dockerfile: docker/Dockerfile
+    container_name: resources-service
+    restart: unless-stopped
+    ports:
+      - "8096:8096"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    environment:
+      SPRING_APPLICATION_NAME: resources-service
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/english_school_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      EUREKA_CLIENT_ENABLED: "true"
+      EUREKA_CLIENT_REGISTER_WITH_EUREKA: "true"
+      EUREKA_CLIENT_FETCH_REGISTRY: "true"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
+      EUREKA_INSTANCE_NONSECUREPORT: "8096"
+      EUREKA_INSTANCE_NONSECUREPORTENABLED: "true"
+    networks:
+      - esm-net
+
+
+  # ── 6. Assessment Service ──────────────────────────────────────────────────
+  assessment-service:
+    build:
+      context: ./assessment-service
+      dockerfile: docker/Dockerfile
+    container_name: assessment-service
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    environment:
+      SPRING_APPLICATION_NAME: assessment-service
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/english_school_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      EUREKA_CLIENT_ENABLED: "true"
+      EUREKA_CLIENT_REGISTER_WITH_EUREKA: "true"
+      EUREKA_CLIENT_FETCH_REGISTRY: "true"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
+      EUREKA_INSTANCE_NONSECUREPORT: "8081"
+      EUREKA_INSTANCE_NONSECUREPORTENABLED: "true"
+      SPRING_MAIL_HOST: smtp.gmail.com
+      SPRING_MAIL_PORT: "587"
+      SPRING_MAIL_USERNAME: placeholder@gmail.com
+      SPRING_MAIL_PASSWORD: placeholder
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "true"
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "true"
+    networks:
+      - esm-net
+
+
+  # ── 7. Payment Service ─────────────────────────────────────────────────────
+  payment-service:
+    build: ./payment_Microsevices
+    container_name: payment-service
+    restart: unless-stopped
+    ports:
+      - "8083:8083"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    environment:
+      SPRING_APPLICATION_NAME: payment-service
+      SERVER_PORT: "8083"
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/pidev?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      EUREKA_CLIENT_ENABLED: "true"
+      EUREKA_CLIENT_REGISTER_WITH_EUREKA: "true"
+      EUREKA_CLIENT_FETCH_REGISTRY: "true"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
+      EUREKA_INSTANCE_NONSECUREPORT: "8083"
+      EUREKA_INSTANCE_NONSECUREPORTENABLED: "true"
+      SPRING_MAIL_HOST: smtp.gmail.com
+      SPRING_MAIL_PORT: "587"
+      SPRING_MAIL_USERNAME: placeholder@gmail.com
+      SPRING_MAIL_PASSWORD: placeholder
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "true"
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "true"
+    networks:
+      - esm-net
+
+
+  # ── 8. Reporting Service ───────────────────────────────────────────────────
+  reporting-service:
+    build: ./reporting-service
+    container_name: reporting-service
+    restart: unless-stopped
+    ports:
+      - "8085:8085"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    environment:
+      SPRING_APPLICATION_NAME: reporting-service
+      SERVER_PORT: "8085"
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/pidev?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      EUREKA_CLIENT_ENABLED: "true"
+      EUREKA_CLIENT_REGISTER_WITH_EUREKA: "true"
+      EUREKA_CLIENT_FETCH_REGISTRY: "true"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
+      EUREKA_INSTANCE_NONSECUREPORT: "8085"
+      EUREKA_INSTANCE_NONSECUREPORTENABLED: "true"
+    networks:
+      - esm-net
+
+
+  # ── 9. Gateway Service (ALWAYS LAST) ───────────────────────────────────────
   gateway-service:
     build: ./gateway-service
     container_name: gateway-service
@@ -98,60 +243,26 @@ services:
         condition: service_healthy
     environment:
       SPRING_APPLICATION_NAME: gateway-service
+      EUREKA_CLIENT_ENABLED: "true"
+      EUREKA_CLIENT_REGISTER_WITH_EUREKA: "true"
+      EUREKA_CLIENT_FETCH_REGISTRY: "true"
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
       EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
+      # Faster registry sync — gateway picks up services quicker
+      EUREKA_CLIENT_REGISTRY_FETCH_INTERVAL_SECONDS: "5"
+      EUREKA_CLIENT_INITIAL_INSTANCE_INFO_REPLICATION_INTERVAL_SECONDS: "5"
+      # Auto-discover all Eureka-registered services
+      SPRING_CLOUD_GATEWAY_DISCOVERY_LOCATOR_ENABLED: "true"
+      SPRING_CLOUD_GATEWAY_DISCOVERY_LOCATOR_LOWER_CASE_SERVICE_ID: "true"
+    networks:
+      - esm-net
 
-  # ── 6. Resources Service ───────────────────────────────────────────────────
-  resources-service:
-    build:
-      context: ./resources-service
-      dockerfile: docker/Dockerfile
-    container_name: resources-service
-    restart: unless-stopped
-    ports:
-      - "8096:8096"
-    depends_on:
-      mysql:
-        condition: service_healthy        # ← waits for MySQL to be READY
-      eureka-server:
-        condition: service_healthy
-    environment:
-      SPRING_APPLICATION_NAME: resources-service
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/english_school_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: root
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
-      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
-
-  # ── 7. Assessment Service ss──────────────────────────────────────────────────
-  assessment-service:
-    build:
-      context: ./assessment-service
-      dockerfile: docker/Dockerfile
-    container_name: assessment-service
-    restart: unless-stopped
-    ports:
-      - "8081:8081"
-    depends_on:
-      mysql:
-        condition: service_healthy        # ← waits for MySQL to be READY
-      eureka-server:
-        condition: service_healthy
-    environment:
-      SPRING_APPLICATION_NAME: assessment-service
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/english_school_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: root
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
-      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
-      SPRING_MAIL_HOST: smtp.gmail.com
-      SPRING_MAIL_PORT: "587"
-      SPRING_MAIL_USERNAME: placeholder@gmail.com
-      SPRING_MAIL_PASSWORD: placeholder
-      SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "true"
-      SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "true"
 
 volumes:
   mysql_data:
   auth-db-data:
   auth-avatars:
+
+networks:
+  esm-net:
+    driver: bridge
