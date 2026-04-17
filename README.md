@@ -73,6 +73,7 @@ Then start the other services
 The application will be accessible at: http://localhost:8080
 
 📁 Project Structure
+```bash
 textEnglishSchoolManagement_Backend/
 ├── discovery-service/
 ├── gateway-service/
@@ -89,7 +90,7 @@ textEnglishSchoolManagement_Backend/
 ├── messaging-service/
 ├── docker-compose.yml
 └── README.md
-
+```
 🤝 Team Members
 
 Akrem Argoubi (Project Maintainer)
