@@ -1,4 +1,4 @@
-# 🎓 Esprit PIDEV 4SAE4 — English School Management 
+# 🎓 Esprit PIDEV 4SAE4 — English School Management
 
 **A robust microservices architecture for managing an English language school.**
 
@@ -60,6 +60,7 @@ The project follows a **microservices architecture** with:
 ```bash
 git clone https://github.com/akremargoubi/EnglishSchoolManagement_Backend.git
 cd EnglishSchoolManagement_Backend
+```
 2. Run with Docker (Recommended)
 Bashdocker-compose up --build
 3. Manual Run (Development)
@@ -67,7 +68,7 @@ Start services in this order:
 
 discovery-service
 gateway-service
-Other services
+Then start the other services
 
 The application will be accessible at: http://localhost:8080
 
@@ -101,5 +102,4 @@ Kamal Hamdi
 📄 License
 This project is developed for academic purposes at Esprit School of Engineering - PIDEV 4SAE4 (2025/2026).
 
-Made with by the CodeX Team
-
+Made by the CodeX Team
