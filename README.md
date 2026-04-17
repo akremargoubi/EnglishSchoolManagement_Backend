@@ -92,13 +92,13 @@ textEnglishSchoolManagement_Backend/
 └── README.md
 ```
 🤝 Team Members
-
+```bash
 Akrem Argoubi (Project Maintainer)
 Firas Tourki
 Rayen Karouch
 Youssef Fadaoui
 Kamal Hamdi
-
+```
 
 📄 License
 This project is developed for academic purposes at Esprit School of Engineering - PIDEV 4SAE4 (2025/2026).
