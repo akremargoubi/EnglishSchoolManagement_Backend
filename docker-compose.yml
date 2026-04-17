@@ -136,7 +136,30 @@ services:
       - esm-net
 
 
-  # ── 7. Resources MySQL ─────────────────────────────────────────────────────
+  # ── 7. Email PostgreSQL ────────────────────────────────────────────────────
+  email-db:
+    image: postgres:16-alpine
+    container_name: email-db
+    restart: unless-stopped
+    ports:
+      - "5438:5432"
+    environment:
+      POSTGRES_DB: email_db
+      POSTGRES_USER: esm
+      POSTGRES_PASSWORD: esmsecret
+    volumes:
+      - email-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U esm -d email_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks:
+      - esm-net
+
+
+  # ── 8. Resources MySQL ─────────────────────────────────────────────────────
   resources-db:
     image: mysql:8
     container_name: resources-db
@@ -158,7 +181,7 @@ services:
       - esm-net
 
 
-  # ── 8. Assessment MySQL ────────────────────────────────────────────────────
+  # ── 9. Assessment MySQL ────────────────────────────────────────────────────
   assessment-db:
     image: mysql:8
     container_name: assessment-db
@@ -180,7 +203,7 @@ services:
       - esm-net
 
 
-  # ── 9. Payment MySQL ───────────────────────────────────────────────────────
+  # ── 10. Payment MySQL ──────────────────────────────────────────────────────
   payment-db:
     image: mysql:8
     container_name: payment-db
@@ -202,7 +225,7 @@ services:
       - esm-net
 
 
-  # ── 10. Reporting MySQL ────────────────────────────────────────────────────
+  # ── 11. Reporting MySQL ────────────────────────────────────────────────────
   reporting-db:
     image: mysql:8
     container_name: reporting-db
@@ -224,7 +247,7 @@ services:
       - esm-net
 
 
-  # ── 11. Auth Service ───────────────────────────────────────────────────────
+  # ── 12. Auth Service ───────────────────────────────────────────────────────
   auth-service:
     build: ./esmauthms
     image: esm-auth-service:latest
@@ -235,17 +258,19 @@ services:
         condition: service_healthy
       eureka-server:
         condition: service_healthy
+      email-service:
+        condition: service_started
     ports:
       - "1999:1999"
     environment:
       SPRING_APPLICATION_NAME: auth-service
+      SERVER_SERVLET_CONTEXT_PATH: /api
       SPRING_DATASOURCE_URL: jdbc:postgresql://auth-db:5432/esmauthdb
       SPRING_DATASOURCE_USERNAME: authserviceuser
       SPRING_DATASOURCE_PASSWORD: authservicedbp4ss
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       JWT_SECRET: ${JWT_SECRET}
       JWT_ACCESS_TOKEN_EXPIRATION: 604800000
-      APP_CORS_ALLOWED_ORIGINS: http://localhost:4200
       EUREKA_CLIENT_ENABLED: "true"
       EUREKA_CLIENT_REGISTER_WITH_EUREKA: "true"
       EUREKA_CLIENT_FETCH_REGISTRY: "true"
@@ -254,15 +279,47 @@ services:
       EUREKA_INSTANCE_INSTANCE_ID: auth-service:1999
       EMAIL_SERVICE_URL: http://email-service:2001/api/emails/send
       APP_STORAGE_AVATAR_DIR: /app/avatars
-      # 🆕 Change context path to / so gateway can forward /api/classes correctly
-      SERVER_SERVLET_CONTEXT_PATH: /
     volumes:
       - auth-avatars:/app/avatars
     networks:
       - esm-net
 
 
-  # ── 12. Resources Service ──────────────────────────────────────────────────
+  # ── 13. Email / Messaging Service ─────────────────────────────────────────
+  # Container MUST stay "email-service" — auth-service calls:
+  # http://email-service:2001/api/emails/send
+  email-service:
+    build: ./messaging-service
+    container_name: email-service
+    restart: unless-stopped
+    ports:
+      - "2001:2001"
+    depends_on:
+      email-db:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    environment:
+      SPRING_APPLICATION_NAME: notification-service
+      SERVER_PORT: "2001"
+      SPRING_DATASOURCE_URL: jdbc:postgresql://email-db:5432/email_db
+      SPRING_DATASOURCE_USERNAME: esm
+      SPRING_DATASOURCE_PASSWORD: esmsecret
+      EUREKA_CLIENT_ENABLED: "true"
+      EUREKA_CLIENT_REGISTER_WITH_EUREKA: "true"
+      EUREKA_CLIENT_FETCH_REGISTRY: "true"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
+      EUREKA_INSTANCE_INSTANCE_ID: notification-service:2001
+      MAILJET_API_KEY: ${MAILJET_API_KEY}
+      MAILJET_SECRET_KEY: ${MAILJET_SECRET_KEY}
+      MAILJET_SENDER_EMAIL: ${MAILJET_SENDER_EMAIL:-blink@akrem.dev}
+      MAILJET_SENDER_NAME: ${MAILJET_SENDER_NAME:-ESM Platform}
+    networks:
+      - esm-net
+
+
+  # ── 14. Resources Service ──────────────────────────────────────────────────
   resources-service:
     build:
       context: ./resources-service
@@ -294,7 +351,7 @@ services:
       - esm-net
 
 
-  # ── 13. Assessment Service ─────────────────────────────────────────────────
+  # ── 15. Assessment Service ─────────────────────────────────────────────────
   assessment-service:
     build:
       context: ./assessment-service
@@ -334,7 +391,7 @@ services:
       - esm-net
 
 
-  # ── 14. Payment Service ────────────────────────────────────────────────────
+  # ── 16. Payment Service ────────────────────────────────────────────────────
   payment-service:
     build: ./payment_Microsevices
     container_name: payment-service
@@ -370,7 +427,7 @@ services:
       - esm-net
 
 
-  # ── 15. Reporting Service ──────────────────────────────────────────────────
+  # ── 17. Reporting Service ──────────────────────────────────────────────────
   reporting-service:
     build: ./reporting-service
     container_name: reporting-service
@@ -400,7 +457,7 @@ services:
       - esm-net
 
 
-  # ── 16. Enrollment Service ─────────────────────────────────────────────────
+  # ── 18. Enrollment Service ─────────────────────────────────────────────────
   enrollment-service:
     build: ./enrollment-service
     container_name: enrollment-service
@@ -437,7 +494,7 @@ services:
       - esm-net
 
 
-  # ── 17. Course Service ─────────────────────────────────────────────────────
+  # ── 19. Course Service ─────────────────────────────────────────────────────
   course-service:
     build: ./course-service
     container_name: course-service
@@ -476,7 +533,7 @@ services:
       - esm-net
 
 
-  # ── 18. Attendance Service ─────────────────────────────────────────────────
+  # ── 20. Attendance Service ─────────────────────────────────────────────────
   attendance-service:
     build: ./attendance-service
     container_name: attendance-service
@@ -510,7 +567,7 @@ services:
       - esm-net
 
 
-  # ── 19. Schedule Service ───────────────────────────────────────────────────
+  # ── 21. Schedule Service ───────────────────────────────────────────────────
   schedule-service:
     build: ./schedule-service
     container_name: schedule-service
@@ -544,7 +601,7 @@ services:
       - esm-net
 
 
-  # ── 20. Certificate Service (FastAPI Python) ───────────────────────────────
+  # ── 22. Certificate Service (FastAPI Python) ───────────────────────────────
   certificate-service:
     build:
       context: ./certificate-service
@@ -565,7 +622,7 @@ services:
       start_period: 20s
 
 
-  # ── 21. Gateway Service (ALWAYS LAST) ──────────────────────────────────────
+  # ── 23. Gateway Service (ALWAYS LAST) ──────────────────────────────────────
   gateway-service:
     build: ./gateway-service
     container_name: gateway-service
@@ -597,6 +654,7 @@ volumes:
   course-db-data:
   attendance-db-data:
   schedule-db-data:
+  email-db-data:
   resources-db-data:
   assessment-db-data:
   payment-db-data:
