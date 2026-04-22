@@ -27,4 +27,6 @@ public class EnrollmentDTO {
     private Instant completedAt;
 
     private Integer progressPercent;
+
+    private String userUuid;
 }

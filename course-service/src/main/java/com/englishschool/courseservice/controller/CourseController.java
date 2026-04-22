@@ -1,5 +1,6 @@
 package com.englishschool.courseservice.controller;
 
+import com.englishschool.courseservice.dto.AssignTutorRequest;
 import com.englishschool.courseservice.dto.CourseDTO;
 import com.englishschool.courseservice.dto.CourseSearchRequest;
 import com.englishschool.courseservice.dto.PageResponse;
@@ -83,5 +84,17 @@ public class CourseController {
     @Operation(summary = "Delete course")
     public void delete(@PathVariable Long id) {
         service.delete(id);
+    }
+
+    @PutMapping("/{id}/assign-tutor")
+    @Operation(summary = "Assign tutor email to course (Admin)")
+    public CourseDTO assignTutor(@PathVariable Long id, @Valid @RequestBody AssignTutorRequest req) {
+        return service.assignTutor(id, req.getTutorEmail());
+    }
+
+    @GetMapping("/by-tutor")
+    @Operation(summary = "Get courses by tutor email")
+    public List<CourseDTO> getByTutor(@RequestParam String email) {
+        return service.getByTutorEmail(email);
     }
 }

@@ -18,6 +18,7 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailClient emailClient;
 
     private UserResponseDto toDto(User user) {
         UserResponseDto.UserResponseDtoBuilder builder = UserResponseDto.builder()
@@ -47,6 +48,9 @@ public class UserServiceImpl implements UserService {
                     .classLevel(user.getStudentClass().getLevel())
                     .classSpecialty(user.getStudentClass().getSpecialty());
         }
+
+        builder.walletBalance(user.getWalletBalance())
+               .parentEmail(user.getParentEmail());
 
         return builder.build();
     }
@@ -146,6 +150,44 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
         user.setAvatarUrl(avatarUrl);
         User saved = userRepository.save(user);
+        return toDto(saved);
+    }
+
+    @Override
+    public UserResponseDto topUpWallet(UUID targetUserId, Double amount) {
+        User user = userRepository.findById(targetUserId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        user.setWalletBalance(user.getWalletBalance() + amount);
+        return toDto(userRepository.save(user));
+    }
+
+    @Override
+    public UserResponseDto deductWallet(UUID userId, Double amount) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        if (user.getWalletBalance() < amount) {
+            throw new RuntimeException("Insufficient balance");
+        }
+        user.setWalletBalance(user.getWalletBalance() - amount);
+        return toDto(userRepository.save(user));
+    }
+
+    @Override
+    public UserResponseDto setParentEmail(UUID studentId, String parentEmail) {
+        User user = userRepository.findById(studentId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        user.setParentEmail(parentEmail);
+        User saved = userRepository.save(user);
+        emailClient.sendEmail(
+                parentEmail,
+                "You've been linked as a parent on ESM Platform",
+                "Hello,\n\nStudent " + user.getFirstName() + " " + user.getLastName()
+                + " has linked you as their parent on ESM Platform.\n\n"
+                + "To accept and access your child's information, please register at:\n"
+                + "http://localhost:4200/register\n\n"
+                + "Use this exact email address when registering so the link is recognized automatically.\n\n"
+                + "Best regards,\nESM Platform Team"
+        );
         return toDto(saved);
     }
 }

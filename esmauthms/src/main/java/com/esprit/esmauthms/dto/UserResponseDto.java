@@ -34,4 +34,7 @@ public class UserResponseDto {
     private String className;
     private String classLevel;
     private String classSpecialty;
+
+    private Double walletBalance;
+    private String parentEmail;
 }

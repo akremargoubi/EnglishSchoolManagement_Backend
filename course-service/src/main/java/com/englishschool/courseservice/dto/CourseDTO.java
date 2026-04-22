@@ -37,4 +37,6 @@ public class CourseDTO {
     private BigDecimal ratingAvg;
 
     private Integer ratingCount;
+
+    private String tutorEmail;
 }

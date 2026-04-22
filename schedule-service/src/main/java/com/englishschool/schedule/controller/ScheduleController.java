@@ -53,4 +53,14 @@ public class ScheduleController {
         WeatherData weather = weatherService.getWeatherForDay(dayOfWeek, localDate);
         return ResponseEntity.ok(weather);
     }
+
+    @GetMapping("/course/{courseId}")
+    public List<Schedule> getByCourse(@PathVariable Long courseId) {
+        return scheduleService.getByCourseId(courseId);
+    }
+
+    @GetMapping("/class")
+    public List<Schedule> getByClass(@RequestParam String name) {
+        return scheduleService.getByClassName(name);
+    }
 }

@@ -40,4 +40,19 @@ public class AttendanceController {
     public void deleteAttendance(@PathVariable Long id) {
         attendanceService.deleteAttendance(id);
     }
+
+    @GetMapping("/student/{email}")
+    public List<Attendance> getByStudentEmail(@PathVariable String email) {
+        return attendanceService.getByStudentEmail(email);
+    }
+
+    @GetMapping("/course/{courseId}")
+    public List<Attendance> getByCourse(@PathVariable Long courseId) {
+        return attendanceService.getByCourseId(courseId);
+    }
+
+    @GetMapping("/student/{email}/course/{courseId}")
+    public List<Attendance> getByStudentAndCourse(@PathVariable String email, @PathVariable Long courseId) {
+        return attendanceService.getByStudentEmailAndCourseId(email, courseId);
+    }
 }
