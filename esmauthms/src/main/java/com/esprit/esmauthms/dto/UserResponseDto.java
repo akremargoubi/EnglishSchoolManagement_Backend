@@ -37,4 +37,5 @@ public class UserResponseDto {
 
     private Double walletBalance;
     private String parentEmail;
+    private UUID parentId;
 }

@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -20,4 +21,10 @@ public interface UserRepository extends JpaRepository<User, UUID> {
             String phoneNumber,
             Pageable pageable
     );
+
+    Page<User> findByRoleAndDeletedAtIsNull(String role, Pageable pageable);
+
+    List<User> findByParentId(UUID parentId);
+
+    Optional<User> findByEmailAndRole(String email, String role);
 }

@@ -53,6 +53,10 @@ public class User {
     @Column(name = "parent_email", length = 255)
     private String parentEmail;
 
+    // UUID of the parent User (set by admin when linking a child to a PARENT account)
+    @Column(name = "parent_id")
+    private UUID parentId;
+
     // 🆕 Relation vers la classe de l'étudiant
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "class_id")
