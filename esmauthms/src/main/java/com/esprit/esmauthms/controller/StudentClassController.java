@@ -86,4 +86,10 @@ public class StudentClassController {
     public StudentClassResponseDto removeTutor(@PathVariable Long classId) {
         return studentClassService.removeTutor(classId);
     }
+
+    /** All classes taught by a given tutor — used by downstream services for authorization. */
+    @GetMapping("/by-tutor/{tutorId}")
+    public List<StudentClassResponseDto> getByTutor(@PathVariable UUID tutorId) {
+        return studentClassService.getClassesByTutor(tutorId);
+    }
 }

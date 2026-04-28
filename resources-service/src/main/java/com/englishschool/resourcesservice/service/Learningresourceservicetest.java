@@ -1,7 +1,9 @@
 package com.englishschool.resourcesservice.service;
 
+import com.englishschool.resourcesservice.client.AuthServiceClient;
 import com.englishschool.resourcesservice.entity.LearningResource;
 import com.englishschool.resourcesservice.repository.LearningResourceRepository;
+import com.englishschool.resourcesservice.security.CallerContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -13,6 +15,8 @@ import org.springframework.mock.web.MockMultipartFile;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -22,14 +26,18 @@ import static org.mockito.Mockito.*;
 @DisplayName("LearningResourceService Tests")
 class LearningResourceServiceTest {
 
-    // ── Mocks ──────────────────────────────────────────────────────────────────
     @Mock
     private LearningResourceRepository repository;
+
+    @Mock
+    private AuthServiceClient authClient;
 
     @InjectMocks
     private LearningResourceService service;
 
-    // ── Test data ──────────────────────────────────────────────────────────────
+    // Admin caller bypasses all auth checks — simplest for unit tests
+    private static final CallerContext ADMIN = new CallerContext(UUID.randomUUID(), "ADMIN", "admin@test.com");
+
     private LearningResource resource1;
     private LearningResource resource2;
 
@@ -59,14 +67,11 @@ class LearningResourceServiceTest {
     @Test
     @DisplayName("getByAssessmentId() — should return resources for given assessment")
     void getByAssessmentId_shouldReturnResources() {
-        // GIVEN
         List<LearningResource> resources = Arrays.asList(resource1, resource2);
         when(repository.findByAssessmentId(10L)).thenReturn(resources);
 
-        // WHEN
-        List<LearningResource> result = service.getByAssessmentId(10L);
+        List<LearningResource> result = service.getByAssessmentId(10L, ADMIN);
 
-        // THEN
         assertNotNull(result);
         assertEquals(2, result.size());
         assertEquals("Grammar Guide", result.get(0).getTitle());
@@ -77,13 +82,10 @@ class LearningResourceServiceTest {
     @Test
     @DisplayName("getByAssessmentId() — should return empty list when no resources")
     void getByAssessmentId_shouldReturnEmptyList_whenNoResources() {
-        // GIVEN
         when(repository.findByAssessmentId(99L)).thenReturn(List.of());
 
-        // WHEN
-        List<LearningResource> result = service.getByAssessmentId(99L);
+        List<LearningResource> result = service.getByAssessmentId(99L, ADMIN);
 
-        // THEN
         assertNotNull(result);
         assertTrue(result.isEmpty());
         verify(repository, times(1)).findByAssessmentId(99L);
@@ -92,15 +94,12 @@ class LearningResourceServiceTest {
     @Test
     @DisplayName("getByAssessmentId() — should return only resources for that assessment")
     void getByAssessmentId_shouldFilterByAssessment() {
-        // GIVEN
         when(repository.findByAssessmentId(10L)).thenReturn(List.of(resource1));
         when(repository.findByAssessmentId(20L)).thenReturn(List.of(resource2));
 
-        // WHEN
-        List<LearningResource> result10 = service.getByAssessmentId(10L);
-        List<LearningResource> result20 = service.getByAssessmentId(20L);
+        List<LearningResource> result10 = service.getByAssessmentId(10L, ADMIN);
+        List<LearningResource> result20 = service.getByAssessmentId(20L, ADMIN);
 
-        // THEN
         assertEquals(1, result10.size());
         assertEquals("Grammar Guide", result10.get(0).getTitle());
         assertEquals(1, result20.size());
@@ -114,26 +113,20 @@ class LearningResourceServiceTest {
     @Test
     @DisplayName("delete() — should call deleteById once with correct id")
     void delete_shouldCallDeleteById() {
-        // GIVEN
         doNothing().when(repository).deleteById(1L);
 
-        // WHEN
-        service.delete(1L);
+        service.delete(1L, ADMIN);
 
-        // THEN
         verify(repository, times(1)).deleteById(1L);
     }
 
     @Test
     @DisplayName("delete() — should never call deleteById with wrong id")
     void delete_shouldNotCallDeleteWithWrongId() {
-        // GIVEN
         doNothing().when(repository).deleteById(1L);
 
-        // WHEN
-        service.delete(1L);
+        service.delete(1L, ADMIN);
 
-        // THEN
         verify(repository, never()).deleteById(2L);
         verify(repository, never()).deleteById(99L);
     }
@@ -145,12 +138,9 @@ class LearningResourceServiceTest {
     @Test
     @DisplayName("upload() — should throw exception when file is null")
     void upload_shouldThrowException_whenFileIsNull() {
-        // GIVEN — file is null
-
-        // WHEN & THEN
         RuntimeException exception = assertThrows(
                 RuntimeException.class,
-                () -> service.upload("Grammar Guide", "PDF", true, 10L, null)
+                () -> service.upload("Grammar Guide", "PDF", true, 10L, null, ADMIN)
         );
         assertNotNull(exception.getMessage());
     }
@@ -158,63 +148,46 @@ class LearningResourceServiceTest {
     @Test
     @DisplayName("upload() — should throw exception when file is empty")
     void upload_shouldThrowException_whenFileIsEmpty() {
-        // GIVEN
         MockMultipartFile emptyFile = new MockMultipartFile(
                 "file", "test.pdf", "application/pdf", new byte[0]
         );
 
-        // WHEN & THEN
         RuntimeException exception = assertThrows(
                 RuntimeException.class,
-                () -> service.upload("Grammar Guide", "PDF", true, 10L, emptyFile)
+                () -> service.upload("Grammar Guide", "PDF", true, 10L, emptyFile, ADMIN)
         );
         assertNotNull(exception.getMessage());
     }
 
     @Test
     @DisplayName("upload() — should save resource when file is valid")
-    void upload_shouldSaveResource_whenFileIsValid() throws Exception {
-        // GIVEN
+    void upload_shouldSaveResource_whenFileIsValid() {
         MockMultipartFile validFile = new MockMultipartFile(
-                "file",
-                "grammar.pdf",
-                "application/pdf",
-                "PDF content here".getBytes()
+                "file", "grammar.pdf", "application/pdf", "PDF content here".getBytes()
         );
-
         when(repository.save(any(LearningResource.class))).thenReturn(resource1);
 
-        // WHEN
         assertDoesNotThrow(() ->
-                service.upload("Grammar Guide", "PDF", true, 10L, validFile)
+                service.upload("Grammar Guide", "PDF", true, 10L, validFile, ADMIN)
         );
 
-        // THEN
         verify(repository, times(1)).save(any(LearningResource.class));
     }
 
     @Test
     @DisplayName("upload() — should set correct title and type on saved resource")
     void upload_shouldSetCorrectFields_onSavedResource() {
-        // GIVEN
         MockMultipartFile validFile = new MockMultipartFile(
-                "file",
-                "vocab.pdf",
-                "application/pdf",
-                "some content".getBytes()
+                "file", "vocab.pdf", "application/pdf", "some content".getBytes()
         );
-
-        // Capture the saved resource
         when(repository.save(any(LearningResource.class))).thenAnswer(invocation -> {
             LearningResource saved = invocation.getArgument(0);
             saved.setId(1L);
             return saved;
         });
 
-        // WHEN
-        service.upload("Vocabulary PDF", "PDF", false, 5L, validFile);
+        service.upload("Vocabulary PDF", "PDF", false, 5L, validFile, ADMIN);
 
-        // THEN
         verify(repository, times(1)).save(argThat(r ->
                 r.getTitle().equals("Vocabulary PDF") &&
                         r.getType().equals("PDF") &&
@@ -226,23 +199,13 @@ class LearningResourceServiceTest {
     @Test
     @DisplayName("upload() — fileUrl should start with 'uploads/'")
     void upload_shouldSetFileUrlStartingWithUploads() {
-        // GIVEN
         MockMultipartFile validFile = new MockMultipartFile(
-                "file",
-                "notes.pdf",
-                "application/pdf",
-                "notes content".getBytes()
+                "file", "notes.pdf", "application/pdf", "notes content".getBytes()
         );
+        when(repository.save(any(LearningResource.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        when(repository.save(any(LearningResource.class))).thenAnswer(invocation -> {
-            LearningResource saved = invocation.getArgument(0);
-            return saved;
-        });
+        service.upload("Notes", "PDF", true, 10L, validFile, ADMIN);
 
-        // WHEN
-        service.upload("Notes", "PDF", true, 10L, validFile);
-
-        // THEN
         verify(repository, times(1)).save(argThat(r ->
                 r.getFileUrl() != null && r.getFileUrl().startsWith("uploads/")
         ));
@@ -255,10 +218,7 @@ class LearningResourceServiceTest {
     @Test
     @DisplayName("LearningResource — getters and setters should work correctly")
     void learningResource_gettersAndSetters_shouldWork() {
-        // GIVEN
         LearningResource r = new LearningResource();
-
-        // WHEN
         r.setId(5L);
         r.setTitle("Test Resource");
         r.setType("PDF");
@@ -266,7 +226,6 @@ class LearningResourceServiceTest {
         r.setAssessmentId(20L);
         r.setFileUrl("uploads/test.pdf");
 
-        // THEN
         assertEquals(5L, r.getId());
         assertEquals("Test Resource", r.getTitle());
         assertEquals("PDF", r.getType());
@@ -278,10 +237,7 @@ class LearningResourceServiceTest {
     @Test
     @DisplayName("LearningResource — published flag should default to false")
     void learningResource_publishedFlag_shouldDefaultToFalse() {
-        // GIVEN & WHEN
         LearningResource r = new LearningResource();
-
-        // THEN
         assertFalse(r.isPublished());
     }
 }

@@ -55,6 +55,11 @@ public class PaymentController {
         return ResponseEntity.ok(service.findByStudent(studentId));
     }
 
+    @GetMapping("/by-student-email/{email}")
+    public ResponseEntity<List<PaymentEntity>> byStudentEmail(@PathVariable String email) {
+        return ResponseEntity.ok(service.findByStudentEmail(email));
+    }
+
     @GetMapping("/test-email")
     public ResponseEntity<String> testEmail() {
         emailService.sendEmail(

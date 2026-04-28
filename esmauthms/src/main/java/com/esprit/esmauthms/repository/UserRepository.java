@@ -3,6 +3,7 @@ package com.esprit.esmauthms.repository;
 import com.esprit.esmauthms.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -22,6 +23,8 @@ public interface UserRepository extends JpaRepository<User, UUID> {
             Pageable pageable
     );
 
+    // Eagerly fetches studentClass in a single LEFT JOIN to avoid N+1 lazy loads in toDto
+    @EntityGraph(attributePaths = {"studentClass"})
     Page<User> findByRoleAndDeletedAtIsNull(String role, Pageable pageable);
 
     List<User> findByParentId(UUID parentId);

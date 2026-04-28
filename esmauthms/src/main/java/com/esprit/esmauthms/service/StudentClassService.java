@@ -135,6 +135,15 @@ public class StudentClassService {
         return toDto(studentClassRepository.save(c));
     }
 
+    // ── Tutor lookup (used by downstream services for authorization) ──────────
+
+    @Transactional(readOnly = true)
+    public List<StudentClassResponseDto> getClassesByTutor(UUID tutorId) {
+        return studentClassRepository.findByTutor_Id(tutorId).stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
+    }
+
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     private StudentClass findClassOrThrow(Long id) {

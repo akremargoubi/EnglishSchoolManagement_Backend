@@ -1,6 +1,7 @@
 package com.esprit.esmauthms.service;
 
 import com.esprit.esmauthms.dto.*;
+import com.esprit.esmauthms.entity.StudentClass;
 import com.esprit.esmauthms.entity.User;
 import com.esprit.esmauthms.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -42,14 +43,16 @@ public class UserServiceImpl implements UserService {
                 .lastLoginAt(user.getLastLoginAt())
                 .deletedAt(user.getDeletedAt());
 
-        // 🆕 Mappe la classe si l'étudiant en a une
         if (user.getStudentClass() != null) {
+            StudentClass sc = user.getStudentClass();
+            String scName = (sc.getName() != null && !sc.getName().isBlank()) ? sc.getName() : null;
             builder
-                    .classId(user.getStudentClass().getId())
-                    .className(user.getStudentClass().getName())
-                    .classLevel(user.getStudentClass().getLevel())
-                    .classSpecialty(user.getStudentClass().getSpecialty());
+                    .classId(sc.getId())
+                    .className(scName)
+                    .classLevel(sc.getLevel())
+                    .classSpecialty(sc.getSpecialty());
         }
+        // className / classId / classLevel / classSpecialty remain null when no class is assigned
 
         builder.walletBalance(user.getWalletBalance())
                .parentEmail(user.getParentEmail())
@@ -113,15 +116,22 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Page<UserResponseDto> searchUsers(UserSearchCriteria criteria, Pageable pageable) {
-        String email     = criteria.getEmail()       != null ? criteria.getEmail()       : "";
-        String firstName = criteria.getFirstName()   != null ? criteria.getFirstName()   : "";
-        String lastName  = criteria.getLastName()    != null ? criteria.getLastName()    : "";
-        String cin       = criteria.getCin()         != null ? criteria.getCin()         : "";
-        String phone     = criteria.getPhoneNumber() != null ? criteria.getPhoneNumber() : "";
+        Page<User> page;
 
-        Page<User> page = userRepository
-                .findByEmailContainingIgnoreCaseAndFirstNameContainingIgnoreCaseAndLastNameContainingIgnoreCaseAndCinContainingAndPhoneNumberContaining(
-                        email, firstName, lastName, cin, phone, pageable);
+        if (criteria.getRole() != null && !criteria.getRole().isBlank()) {
+            // Role filter uses a dedicated query that also excludes soft-deleted users
+            // and eagerly fetches studentClass to avoid N+1 loads
+            page = userRepository.findByRoleAndDeletedAtIsNull(criteria.getRole(), pageable);
+        } else {
+            String email     = criteria.getEmail()       != null ? criteria.getEmail()       : "";
+            String firstName = criteria.getFirstName()   != null ? criteria.getFirstName()   : "";
+            String lastName  = criteria.getLastName()    != null ? criteria.getLastName()    : "";
+            String cin       = criteria.getCin()         != null ? criteria.getCin()         : "";
+            String phone     = criteria.getPhoneNumber() != null ? criteria.getPhoneNumber() : "";
+            page = userRepository
+                    .findByEmailContainingIgnoreCaseAndFirstNameContainingIgnoreCaseAndLastNameContainingIgnoreCaseAndCinContainingAndPhoneNumberContaining(
+                            email, firstName, lastName, cin, phone, pageable);
+        }
 
         return new PageImpl<>(
                 page.getContent().stream().map(this::toDto).collect(Collectors.toList()),

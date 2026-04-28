@@ -347,6 +347,7 @@ services:
       EUREKA_INSTANCE_NONSECUREPORT: "8096"
       EUREKA_INSTANCE_NONSECUREPORTENABLED: "true"
       EUREKA_INSTANCE_INSTANCE_ID: resources-service:8096
+      JWT_SECRET: ${JWT_SECRET}
     networks:
       - esm-net
 
@@ -387,6 +388,8 @@ services:
       SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "true"
       SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "true"
       CERTIFICATE_SERVICE_URL: http://certificate-service:8097
+      AUTH_SERVICE_URL: http://auth-service:1999
+      JWT_SECRET: ${JWT_SECRET}
     networks:
       - esm-net
 

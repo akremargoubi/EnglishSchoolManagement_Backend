@@ -51,6 +51,7 @@ public class UserController {
     // List + pagination + filtering
     @GetMapping
     public Page<UserResponseDto> searchUsers(
+            @RequestParam(required = false) String role,
             @RequestParam(required = false) String email,
             @RequestParam(required = false) String firstName,
             @RequestParam(required = false) String lastName,
@@ -59,6 +60,7 @@ public class UserController {
             Pageable pageable
     ) {
         UserSearchCriteria criteria = new UserSearchCriteria();
+        criteria.setRole(role);
         criteria.setEmail(email);
         criteria.setFirstName(firstName);
         criteria.setLastName(lastName);

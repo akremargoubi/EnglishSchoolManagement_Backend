@@ -1,78 +1,108 @@
 package com.englishschool.resourcesservice.service;
 
+import com.englishschool.resourcesservice.client.AuthServiceClient;
 import com.englishschool.resourcesservice.entity.LearningResource;
 import com.englishschool.resourcesservice.repository.LearningResourceRepository;
+import com.englishschool.resourcesservice.security.CallerContext;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.File;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class LearningResourceService {
 
     private final LearningResourceRepository repository;
+    private final AuthServiceClient authClient;
 
-    public LearningResourceService(LearningResourceRepository repository) {
-        this.repository = repository;
-    }
+    public LearningResource upload(String title, String type, boolean published,
+                                   Long assessmentId, MultipartFile file,
+                                   CallerContext caller) {
+        if (!caller.isAdmin() && !caller.isTutor()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only tutors or admins can upload resources");
+        }
 
-    // ==========================
-    // UPLOAD
-    // ==========================
-    public void upload(String title,
-                       String type,
-                       boolean published,
-                       Long assessmentId,
-                       MultipartFile file) {
+        if (!caller.isAdmin()) {
+            String className = authClient.getAssessmentClassName(assessmentId);
+            if (className == null) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Assessment not found: " + assessmentId);
+            }
+            if (!authClient.isTutorOfClass(caller.userId(), className)) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                        "You are not the tutor of class: " + className);
+            }
+        }
+
+        if (file == null || file.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "File is empty");
+        }
 
         try {
-
-            if (file == null || file.isEmpty()) {
-                throw new RuntimeException("File is empty");
-            }
-
-            // ✅ Chemin corrigé
             String uploadDir = new File("uploads").getAbsolutePath();
             File dir = new File(uploadDir);
-
-            if (!dir.exists()) {
-                dir.mkdirs();
-            }
+            if (!dir.exists()) dir.mkdirs();
 
             String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
             File destination = new File(dir, fileName);
-
             file.transferTo(destination);
 
-            LearningResource resource = new LearningResource();
-            resource.setTitle(title);
-            resource.setType(type);
-            resource.setPublished(published);
-            resource.setAssessmentId(assessmentId);
-            resource.setFileUrl("uploads/" + fileName);
+            LearningResource resource = LearningResource.builder()
+                    .title(title)
+                    .type(type)
+                    .published(published)
+                    .assessmentId(assessmentId)
+                    .fileUrl("uploads/" + fileName)
+                    .uploadedBy(caller.userId())
+                    .build();
 
-            repository.save(resource);
-
-            System.out.println("UPLOAD SUCCESS");
-
+            return repository.save(resource);
         } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("File upload failed", e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "File upload failed: " + e.getMessage());
         }
     }
 
-    // ==========================
-    // GET BY ASSESSMENT
-    // ==========================
-    public List<LearningResource> getByAssessmentId(Long assessmentId) {
-        return repository.findByAssessmentId(assessmentId);
+    public List<LearningResource> getByAssessmentId(Long assessmentId, CallerContext caller) {
+        if (caller.isAdmin()) {
+            return repository.findByAssessmentId(assessmentId);
+        }
+
+        String className = authClient.getAssessmentClassName(assessmentId);
+        if (className == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Assessment not found: " + assessmentId);
+        }
+
+        if (caller.isTutor()) {
+            if (!authClient.isTutorOfClass(caller.userId(), className)) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not the tutor of this class");
+            }
+            return repository.findByAssessmentId(assessmentId);
+        }
+
+        if (caller.isStudent()) {
+            if (!authClient.isStudentInClass(caller.userId(), className)) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not enrolled in this class");
+            }
+            // Students only see published resources
+            return repository.findByAssessmentIdAndPublished(assessmentId, true);
+        }
+
+        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
     }
 
-    // ==========================
-    // DELETE
-    // ==========================
-    public void delete(Long id) {
+    public void delete(Long id, CallerContext caller) {
+        if (caller.isAdmin()) {
+            repository.deleteById(id);
+            return;
+        }
+        // Non-admins can only delete their own uploads
+        repository.findByIdAndUploadedBy(id, caller.userId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN,
+                        "You can only delete resources you uploaded"));
         repository.deleteById(id);
     }
 }

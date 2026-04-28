@@ -19,6 +19,7 @@ public class PaymentEntity {
 
     // روابط اختيارية (حسب ال domain mte3ek)
     private Long studentId;
+    private String studentEmail;
     private Long courseId;
     private Long enrollmentId;
 
@@ -39,6 +40,8 @@ public class PaymentEntity {
     public void setDate(LocalDateTime date) { this.date = date; }
 
     public void setStudentId(Long studentId) { this.studentId = studentId; }
+
+    public void setStudentEmail(String studentEmail) { this.studentEmail = studentEmail; }
 
     public void setCourseId(Long courseId) { this.courseId = courseId; }
 
