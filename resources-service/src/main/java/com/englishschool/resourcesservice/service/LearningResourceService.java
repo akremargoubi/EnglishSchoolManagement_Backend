@@ -92,9 +92,16 @@ public class LearningResourceService {
             repository.deleteById(id);
             return;
         }
-        repository.findByIdAndUploadedBy(id, caller.userId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN,
-                        "You can only delete resources you uploaded"));
-        repository.deleteById(id);
+        if (caller.isTutor()) {
+            LearningResource resource = repository.findById(id)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Resource not found: " + id));
+            String className = authClient.getAssessmentClassName(resource.getAssessmentId());
+            if (!authClient.isTutorOfClass(caller.userId(), className)) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not the tutor of this class");
+            }
+            repository.deleteById(id);
+            return;
+        }
+        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
     }
 }

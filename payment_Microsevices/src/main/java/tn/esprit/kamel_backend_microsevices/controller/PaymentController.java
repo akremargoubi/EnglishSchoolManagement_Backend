@@ -11,8 +11,6 @@ import tn.esprit.kamel_backend_microsevices.service.PaymentService;
 
 @RestController
 @RequestMapping("/api/payments")
-@CrossOrigin(origins = "http://localhost:4200")
-
 public class PaymentController {
     private static final String DEFAULT_RECEIVER = "kamel.hamdi@esprit.tn";
 
