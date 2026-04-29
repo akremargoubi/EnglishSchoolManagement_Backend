@@ -51,6 +51,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             return;
         }
 
+        request.setAttribute("callerToken",  token);
         request.setAttribute("callerId",    jwtUtil.extractUserId(token));
         request.setAttribute("callerRole",  role);
         request.setAttribute("callerEmail", jwtUtil.extractEmail(token));

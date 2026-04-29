@@ -2,8 +2,13 @@ package com.englishschool.resourcesservice.client;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.List;
 import java.util.Map;
@@ -21,11 +26,22 @@ public class AuthServiceClient {
     @Value("${assessment.service.url}")
     private String assessmentServiceUrl;
 
+    private HttpEntity<?> authEntity() {
+        ServletRequestAttributes attrs = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        HttpHeaders headers = new HttpHeaders();
+        if (attrs != null) {
+            String token = (String) attrs.getRequest().getAttribute("callerToken");
+            if (token != null) headers.setBearerAuth(token);
+        }
+        return new HttpEntity<>(headers);
+    }
+
     /** Returns className of a student's enrolled class, or null. */
     public String getStudentClassName(UUID userId) {
         try {
-            Map<?, ?> user = restTemplate.getForObject(
-                    authServiceUrl + "/api/users/" + userId, Map.class);
+            Map<?, ?> user = restTemplate.exchange(
+                    authServiceUrl + "/api/users/" + userId,
+                    HttpMethod.GET, authEntity(), Map.class).getBody();
             return user == null ? null : (String) user.get("className");
         } catch (Exception e) {
             log.warn("getStudentClassName failed for {}: {}", userId, e.getMessage());
@@ -37,8 +53,9 @@ public class AuthServiceClient {
     @SuppressWarnings("unchecked")
     public List<String> getTutorClassNames(UUID tutorId) {
         try {
-            List<?> classes = restTemplate.getForObject(
-                    authServiceUrl + "/api/classes/by-tutor/" + tutorId, List.class);
+            List<?> classes = restTemplate.exchange(
+                    authServiceUrl + "/api/classes/by-tutor/" + tutorId,
+                    HttpMethod.GET, authEntity(), List.class).getBody();
             if (classes == null) return List.of();
             return classes.stream()
                     .filter(c -> c instanceof Map)
@@ -54,8 +71,9 @@ public class AuthServiceClient {
     /** Returns the className of the assessment, or null. */
     public String getAssessmentClassName(Long assessmentId) {
         try {
-            Map<?, ?> assessment = restTemplate.getForObject(
-                    assessmentServiceUrl + "/api/assessments/" + assessmentId, Map.class);
+            Map<?, ?> assessment = restTemplate.exchange(
+                    assessmentServiceUrl + "/api/assessments/" + assessmentId,
+                    HttpMethod.GET, authEntity(), Map.class).getBody();
             return assessment == null ? null : (String) assessment.get("className");
         } catch (Exception e) {
             log.warn("getAssessmentClassName failed for {}: {}", assessmentId, e.getMessage());
