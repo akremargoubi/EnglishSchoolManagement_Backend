@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.io.File;
 import java.util.List;
 
 @Service
@@ -19,6 +18,7 @@ public class LearningResourceService {
 
     private final LearningResourceRepository repository;
     private final AuthServiceClient authClient;
+    private final FileStorageService fileStorageService;
 
     public LearningResource upload(String title, String type, boolean published,
                                    Long assessmentId, MultipartFile file,
@@ -43,24 +43,18 @@ public class LearningResourceService {
         }
 
         try {
-            String uploadDir = new File("uploads").getAbsolutePath();
-            File dir = new File(uploadDir);
-            if (!dir.exists()) dir.mkdirs();
+            String fileUrl = fileStorageService.store(file);
 
-            String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-            File destination = new File(dir, fileName);
-            file.transferTo(destination);
-
-            LearningResource resource = LearningResource.builder()
+            return repository.save(LearningResource.builder()
                     .title(title)
                     .type(type)
                     .published(published)
                     .assessmentId(assessmentId)
-                    .fileUrl("uploads/" + fileName)
+                    .fileUrl(fileUrl)
                     .uploadedBy(caller.userId())
-                    .build();
-
-            return repository.save(resource);
+                    .build());
+        } catch (ResponseStatusException e) {
+            throw e;
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "File upload failed: " + e.getMessage());
         }
@@ -87,7 +81,6 @@ public class LearningResourceService {
             if (!authClient.isStudentInClass(caller.userId(), className)) {
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not enrolled in this class");
             }
-            // Students only see published resources
             return repository.findByAssessmentIdAndPublished(assessmentId, true);
         }
 
@@ -99,7 +92,6 @@ public class LearningResourceService {
             repository.deleteById(id);
             return;
         }
-        // Non-admins can only delete their own uploads
         repository.findByIdAndUploadedBy(id, caller.userId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN,
                         "You can only delete resources you uploaded"));

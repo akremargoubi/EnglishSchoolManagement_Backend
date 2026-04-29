@@ -43,8 +43,16 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             return;
         }
 
+        String role = jwtUtil.extractRole(token);
+        if (role == null) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"error\":\"Token is missing role claim — please log out and log in again\"}");
+            return;
+        }
+
         request.setAttribute("callerId",    jwtUtil.extractUserId(token));
-        request.setAttribute("callerRole",  jwtUtil.extractRole(token));
+        request.setAttribute("callerRole",  role);
         request.setAttribute("callerEmail", jwtUtil.extractEmail(token));
 
         chain.doFilter(request, response);

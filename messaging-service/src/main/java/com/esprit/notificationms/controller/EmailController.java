@@ -15,8 +15,10 @@ public class EmailController {
     private final EmailService emailService;
 
     @PostMapping("/send")
-    public ResponseEntity<String> sendEmail(@Valid @RequestBody EmailRequest request) {
-        emailService.sendEmail(request);
+    public ResponseEntity<String> sendEmail(
+            @Valid @RequestBody EmailRequest request,
+            @RequestHeader(value = "X-Service-Origin", required = false) String serviceOrigin) {
+        emailService.sendEmail(request, serviceOrigin);
         return ResponseEntity.ok("Email sent successfully");
     }
 }
