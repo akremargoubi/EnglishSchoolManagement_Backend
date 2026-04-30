@@ -140,7 +140,6 @@ class AuthServiceTest {
         when(userRepository.findByEmail("unverified@esm.com"))
                 .thenReturn(Optional.of(unverified));
         when(passwordEncoder.matches(anyString(), anyString())).thenReturn(true);
-        when(userRepository.save(any())).thenReturn(unverified);
         doNothing().when(emailClient).sendEmail(anyString(), anyString(), anyString());
 
         AuthFlowResponse response = authService.login(new AuthRequest("unverified@esm.com", "pass"));

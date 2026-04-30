@@ -137,7 +137,6 @@ class StudentClassServiceTest {
         when(classRepository.findById(1L)).thenReturn(Optional.of(sampleClass));
         when(userRepository.findById(studentId)).thenReturn(Optional.of(student));
         when(userRepository.save(any())).thenReturn(student);
-        when(classRepository.save(any())).thenReturn(sampleClass);
 
         assertThatCode(() -> classService.assignStudent(1L, studentId))
                 .doesNotThrowAnyException();
