@@ -1,0 +1,77 @@
+pipeline {
+    agent any
+
+    environment {
+        SERVICE_NAME   = 'esmauthms'
+        DOCKER_IMAGE   = "akremargoubi/esmauthms"
+        DOCKER_TAG     = "${BUILD_NUMBER}"
+        K8S_DEPLOYMENT = 'esmauthms'
+        K8S_NAMESPACE  = 'esm'
+        K8S_MANIFEST   = 'k8s/esmauthms'
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                checkout scm
+                echo "Branch: ${env.BRANCH_NAME} | Build: ${BUILD_NUMBER}"
+            }
+        }
+
+        stage('Build & Test') {
+            steps {
+                dir('esmauthms') {
+                    sh 'mvn clean verify -B'
+                }
+            }
+            post {
+                always {
+                    junit 'esmauthms/target/surefire-reports/*.xml'
+                }
+            }
+        }
+
+        stage('Docker Build & Push') {
+            when { branch 'main' }
+            steps {
+                withCredentials([usernamePassword(
+                        credentialsId: 'dockerhub-credentials',
+                        usernameVariable: 'DOCKER_USER',
+                        passwordVariable: 'DOCKER_PASS')]) {
+                    sh """
+                        cd esmauthms
+                        docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} .
+                        docker tag  ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_IMAGE}:latest
+                        echo "${DOCKER_PASS}" | docker login -u "${DOCKER_USER}" --password-stdin
+                        docker push ${DOCKER_IMAGE}:${DOCKER_TAG}
+                        docker push ${DOCKER_IMAGE}:latest
+                        docker logout
+                    """
+                }
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
+            when { branch 'main' }
+            steps {
+                withCredentials([file(credentialsId: 'kubeconfig-wsl', variable: 'KUBECONFIG')]) {
+                    sh """
+                        export KUBECONFIG=${KUBECONFIG}
+                        kubectl apply -f esmauthms/${K8S_MANIFEST}/ -n ${K8S_NAMESPACE}
+                        kubectl set image deployment/${K8S_DEPLOYMENT} \
+                            ${SERVICE_NAME}=${DOCKER_IMAGE}:${DOCKER_TAG} \
+                            -n ${K8S_NAMESPACE}
+                        kubectl rollout status deployment/${K8S_DEPLOYMENT} \
+                            -n ${K8S_NAMESPACE} --timeout=120s
+                    """
+                }
+            }
+        }
+    }
+
+    post {
+        success { echo "Pipeline SUCCESS — ${SERVICE_NAME}:${DOCKER_TAG} deployed." }
+        failure { echo "Pipeline FAILED — check test reports above." }
+    }
+}
