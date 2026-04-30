@@ -22,12 +22,12 @@ pipeline {
         stage('Build & Test') {
             steps {
                 dir('messaging-service') {
-                    sh 'mvn clean verify -B'
+                    sh 'chmod +x mvnw && ./mvnw clean verify -B'
                 }
             }
             post {
                 always {
-                    junit 'messaging-service/target/surefire-reports/*.xml'
+                    junit allowEmptyResults: true, testResults: 'messaging-service/target/surefire-reports/*.xml'
                 }
             }
         }

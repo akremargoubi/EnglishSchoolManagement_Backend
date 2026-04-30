@@ -22,12 +22,12 @@ pipeline {
         stage('Build & Test') {
             steps {
                 dir('esmauthms') {
-                    sh 'mvn clean verify -B'
+                    sh 'chmod +x mvnw && ./mvnw clean verify -B'
                 }
             }
             post {
                 always {
-                    junit 'esmauthms/target/surefire-reports/*.xml'
+                    junit allowEmptyResults: true, testResults: 'esmauthms/target/surefire-reports/*.xml'
                 }
             }
         }
