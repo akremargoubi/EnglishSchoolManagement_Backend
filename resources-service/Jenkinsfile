@@ -11,12 +11,12 @@ pipeline {
             steps { checkout scm }
         }
         stage('Tests') {
-            steps {
-                dir('resources-service') {
-                    sh './mvnw test'
-                }
-            }
+    steps {
+        dir('resources-service') {
+            sh 'mvn test -f pom.xml'
         }
+    }
+}
         stage('Build Docker') {
             steps {
                 dir('resources-service') {
