@@ -13,21 +13,21 @@ pipeline {
         stage('Tests') {
             steps {
                 dir('resources-service') {
-                    bat 'mvnw.cmd test'
+                    sh './mvnw test'
                 }
             }
         }
         stage('Build Docker') {
             steps {
                 dir('resources-service') {
-                    bat "docker build -t %IMAGE_NAME%:latest -f docker/Dockerfile ."
+                    sh "docker build -t ${IMAGE_NAME}:latest -f docker/Dockerfile ."
                 }
             }
         }
         stage('Deploy K8s') {
             steps {
-                bat "minikube image load %IMAGE_NAME%:latest"
-                bat "kubectl rollout restart deployment/resources-service -n %NAMESPACE%"
+                sh "minikube image load ${IMAGE_NAME}:latest"
+                sh "kubectl rollout restart deployment/resources-service -n ${NAMESPACE}"
             }
         }
     }
