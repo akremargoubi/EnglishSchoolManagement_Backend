@@ -26,13 +26,13 @@ pipeline {
         }
         stage('Deploy K8s') {
             steps {
-                sh "minikube image load ${IMAGE_NAME}:latest"
-                sh "kubectl rollout restart deployment/assessment-service -n ${NAMESPACE}"
+                echo '✅ Image prête - Deploy K8s fait manuellement'
+                echo "Image: ${IMAGE_NAME}:latest"
             }
         }
     }
     post {
-        success { echo '✅ assessment-service déployé !' }
+        success { echo '✅ assessment-service pipeline réussi !' }
         failure { echo '❌ Échec du pipeline' }
     }
 }
