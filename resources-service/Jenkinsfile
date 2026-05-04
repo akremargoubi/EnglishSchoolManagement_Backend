@@ -13,7 +13,7 @@ pipeline {
         stage('Tests') {
     steps {
         dir('resources-service') {
-            sh 'mvn test -f pom.xml -DfailIfNoTests=false'
+            sh '/usr/bin/mvn test -f pom.xml -DfailIfNoTests=false'
         }
     }
 }
