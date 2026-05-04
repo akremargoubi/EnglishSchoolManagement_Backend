@@ -22,13 +22,12 @@ pipeline {
                 }
             }
         }
-        stage('Deploy K8s') {
-            steps {
-                sh "minikube image load ${IMAGE_NAME}:latest"
-                sh "kubectl rollout restart deployment/resources-service -n ${NAMESPACE}"
-            }
-        }
+   stage('Deploy K8s') {
+    steps {
+        echo '✅ Image prête - Deploy K8s fait manuellement'
+        echo "Image: ${IMAGE_NAME}:latest"
     }
+}
     post {
         success { echo '✅ resources-service déployé !' }
         failure { echo '❌ Échec du pipeline' }
