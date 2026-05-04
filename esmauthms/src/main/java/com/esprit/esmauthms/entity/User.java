@@ -46,6 +46,17 @@ public class User {
     private String address;
     private String status;
 
+    @Column(name = "wallet_balance", nullable = false, columnDefinition = "DOUBLE PRECISION DEFAULT 0")
+    @Builder.Default
+    private Double walletBalance = 0.0;
+
+    @Column(name = "parent_email", length = 255)
+    private String parentEmail;
+
+    // UUID of the parent User (set by admin when linking a child to a PARENT account)
+    @Column(name = "parent_id")
+    private UUID parentId;
+
     // 🆕 Relation vers la classe de l'étudiant
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "class_id")

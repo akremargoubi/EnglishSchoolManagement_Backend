@@ -36,4 +36,8 @@ public class Assessment {
     private String startDate;
     private String endDate;
     private Integer duration;
+
+    // UUID of the tutor who created this assessment — used for ownership checks
+    @Column(name = "tutor_id")
+    private java.util.UUID tutorId;
 }

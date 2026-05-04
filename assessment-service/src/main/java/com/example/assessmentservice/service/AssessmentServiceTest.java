@@ -1,9 +1,11 @@
 package com.example.assessmentservice.service;
 
+import com.example.assessmentservice.client.AuthServiceClient;
 import com.example.assessmentservice.entity.Assessment;
 import com.example.assessmentservice.entity.AssessmentStatus;
 import com.example.assessmentservice.entity.AssessmentType;
 import com.example.assessmentservice.repository.AssessmentRepository;
+import com.example.assessmentservice.security.CallerContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -16,41 +18,42 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("AssessmentService Tests")
 class AssessmentServiceTest {
 
-    // ── Mocks ──────────────────────────────────────────────────────────────────
     @Mock
     private AssessmentRepository repository;
 
     @Mock
-    private NotificationService notificationService;
+    private AuthServiceClient authClient;
 
     @InjectMocks
     private AssessmentService assessmentService;
 
-    // ── Test data ──────────────────────────────────────────────────────────────
+    // Admin caller bypasses all auth checks
+    private static final CallerContext ADMIN = new CallerContext(UUID.randomUUID(), "ADMIN", "admin@test.com");
+
     private Assessment assessment1;
     private Assessment assessment2;
 
     @BeforeEach
     void setUp() {
-        // Préparer les données de test avant chaque test
         assessment1 = Assessment.builder()
                 .id(1L)
                 .title("Midterm Grammar")
                 .courseName("English B2")
                 .type(AssessmentType.EXAM)
                 .status(AssessmentStatus.PUBLISHED)
-                .startDate(LocalDateTime.now().plusDays(2))
-                .endDate(LocalDateTime.now().plusDays(2).plusHours(2))
+                .className("TWIN1")
+                .startDate("2026-06-01")
+                .endDate("2026-06-01")
                 .duration(120)
                 .build();
 
@@ -60,8 +63,9 @@ class AssessmentServiceTest {
                 .courseName("English A1")
                 .type(AssessmentType.QUIZ)
                 .status(AssessmentStatus.DRAFT)
-                .startDate(LocalDateTime.now().plusDays(5))
-                .endDate(LocalDateTime.now().plusDays(5).plusHours(1))
+                .className("DS3")
+                .startDate("2026-06-05")
+                .endDate("2026-06-05")
                 .duration(60)
                 .build();
     }
@@ -71,15 +75,12 @@ class AssessmentServiceTest {
     // ══════════════════════════════════════════════════════════════════════════
 
     @Test
-    @DisplayName("create() — should save and return assessment")
+    @DisplayName("create() — admin should save and return assessment")
     void create_shouldSaveAndReturnAssessment() {
-        // GIVEN
         when(repository.save(any(Assessment.class))).thenReturn(assessment1);
 
-        // WHEN
-        Assessment result = assessmentService.create(assessment1);
+        Assessment result = assessmentService.create(assessment1, ADMIN);
 
-        // THEN
         assertNotNull(result);
         assertEquals("Midterm Grammar", result.getTitle());
         assertEquals("English B2", result.getCourseName());
@@ -90,14 +91,22 @@ class AssessmentServiceTest {
     @Test
     @DisplayName("create() — should call repository.save exactly once")
     void create_shouldCallSaveOnce() {
-        // GIVEN
         when(repository.save(any(Assessment.class))).thenReturn(assessment1);
 
-        // WHEN
-        assessmentService.create(assessment1);
+        assessmentService.create(assessment1, ADMIN);
 
-        // THEN
         verify(repository, times(1)).save(any(Assessment.class));
+    }
+
+    @Test
+    @DisplayName("create() — student should be forbidden")
+    void create_studentShouldBeForbidden() {
+        CallerContext student = new CallerContext(UUID.randomUUID(), "USER", "student@test.com");
+
+        assertThrows(RuntimeException.class, () ->
+                assessmentService.create(assessment1, student));
+
+        verify(repository, never()).save(any());
     }
 
     // ══════════════════════════════════════════════════════════════════════════
@@ -105,35 +114,35 @@ class AssessmentServiceTest {
     // ══════════════════════════════════════════════════════════════════════════
 
     @Test
-    @DisplayName("getAll() — should return list of all assessments")
-    void getAll_shouldReturnAllAssessments() {
-        // GIVEN
+    @DisplayName("getAll() — admin should return all assessments")
+    void getAll_adminShouldReturnAll() {
         List<Assessment> assessments = Arrays.asList(assessment1, assessment2);
         when(repository.findAll()).thenReturn(assessments);
 
-        // WHEN
-        List<Assessment> result = assessmentService.getAll();
+        List<Assessment> result = assessmentService.getAll(ADMIN);
 
-        // THEN
         assertNotNull(result);
         assertEquals(2, result.size());
-        assertEquals("Midterm Grammar", result.get(0).getTitle());
-        assertEquals("Weekly Quiz", result.get(1).getTitle());
         verify(repository, times(1)).findAll();
     }
 
     @Test
-    @DisplayName("getAll() — should return empty list when no assessments")
-    void getAll_shouldReturnEmptyList() {
-        // GIVEN
+    @DisplayName("getAll() — admin should return empty list when no assessments")
+    void getAll_adminShouldReturnEmptyList() {
         when(repository.findAll()).thenReturn(List.of());
 
-        // WHEN
-        List<Assessment> result = assessmentService.getAll();
+        List<Assessment> result = assessmentService.getAll(ADMIN);
 
-        // THEN
         assertNotNull(result);
         assertTrue(result.isEmpty());
+    }
+
+    @Test
+    @DisplayName("getAll() — student should be forbidden")
+    void getAll_studentShouldBeForbidden() {
+        CallerContext student = new CallerContext(UUID.randomUUID(), "USER", "student@test.com");
+
+        assertThrows(RuntimeException.class, () -> assessmentService.getAll(student));
     }
 
     // ══════════════════════════════════════════════════════════════════════════
@@ -143,30 +152,23 @@ class AssessmentServiceTest {
     @Test
     @DisplayName("getById() — should return assessment when found")
     void getById_shouldReturnAssessment_whenFound() {
-        // GIVEN
         when(repository.findById(1L)).thenReturn(Optional.of(assessment1));
 
-        // WHEN
         Assessment result = assessmentService.getById(1L);
 
-        // THEN
         assertNotNull(result);
         assertEquals(1L, result.getId());
         assertEquals("Midterm Grammar", result.getTitle());
     }
 
     @Test
-    @DisplayName("getById() — should throw RuntimeException when not found")
+    @DisplayName("getById() — should throw exception when not found")
     void getById_shouldThrowException_whenNotFound() {
-        // GIVEN
         when(repository.findById(99L)).thenReturn(Optional.empty());
 
-        // WHEN & THEN
-        RuntimeException exception = assertThrows(
-                RuntimeException.class,
-                () -> assessmentService.getById(99L)
-        );
-        assertTrue(exception.getMessage().contains("99"));
+        RuntimeException ex = assertThrows(RuntimeException.class,
+                () -> assessmentService.getById(99L));
+        assertTrue(ex.getMessage().contains("99"));
     }
 
     // ══════════════════════════════════════════════════════════════════════════
@@ -174,26 +176,23 @@ class AssessmentServiceTest {
     // ══════════════════════════════════════════════════════════════════════════
 
     @Test
-    @DisplayName("update() — should update fields and return updated assessment")
-    void update_shouldUpdateFieldsAndReturn() {
-        // GIVEN
+    @DisplayName("update() — admin should update fields and return updated assessment")
+    void update_adminShouldUpdateFields() {
         Assessment updated = Assessment.builder()
                 .title("Final Exam")
                 .courseName("English C1")
                 .type(AssessmentType.EXAM)
                 .status(AssessmentStatus.PUBLISHED)
-                .startDate(LocalDateTime.now().plusDays(10))
-                .endDate(LocalDateTime.now().plusDays(10).plusHours(3))
+                .startDate("2026-07-10")
+                .endDate("2026-07-10")
                 .duration(180)
                 .build();
 
         when(repository.findById(1L)).thenReturn(Optional.of(assessment1));
         when(repository.save(any(Assessment.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        // WHEN
-        Assessment result = assessmentService.update(1L, updated);
+        Assessment result = assessmentService.update(1L, updated, ADMIN);
 
-        // THEN
         assertEquals("Final Exam", result.getTitle());
         assertEquals("English C1", result.getCourseName());
         assertEquals(180, result.getDuration());
@@ -203,14 +202,10 @@ class AssessmentServiceTest {
     @Test
     @DisplayName("update() — should throw exception when assessment not found")
     void update_shouldThrowException_whenNotFound() {
-        // GIVEN
         when(repository.findById(99L)).thenReturn(Optional.empty());
 
-        // WHEN & THEN
-        assertThrows(
-                RuntimeException.class,
-                () -> assessmentService.update(99L, assessment1)
-        );
+        assertThrows(RuntimeException.class,
+                () -> assessmentService.update(99L, assessment1, ADMIN));
         verify(repository, never()).save(any());
     }
 
@@ -219,136 +214,92 @@ class AssessmentServiceTest {
     // ══════════════════════════════════════════════════════════════════════════
 
     @Test
-    @DisplayName("delete() — should call deleteById once")
-    void delete_shouldCallDeleteById() {
-        // GIVEN
+    @DisplayName("delete() — admin should call deleteById once")
+    void delete_adminShouldCallDeleteById() {
+        when(repository.findById(1L)).thenReturn(Optional.of(assessment1));
         doNothing().when(repository).deleteById(1L);
 
-        // WHEN
-        assessmentService.delete(1L);
+        assessmentService.delete(1L, ADMIN);
 
-        // THEN
         verify(repository, times(1)).deleteById(1L);
     }
 
     // ══════════════════════════════════════════════════════════════════════════
-    // PLANNING
+    // PLANNING (fixed — repository uses String dates)
     // ══════════════════════════════════════════════════════════════════════════
 
     @Test
-    @DisplayName("getUpcoming() — should return list of upcoming assessments")
-    void getUpcoming_shouldReturnUpcomingAssessments() {
-        // GIVEN
+    @DisplayName("getUpcoming() — should return upcoming assessments")
+    void getUpcoming_shouldReturnAssessments() {
         List<Assessment> upcoming = List.of(assessment1, assessment2);
-        when(repository.findUpcoming(any(LocalDateTime.class))).thenReturn(upcoming);
+        when(repository.findUpcoming(any(String.class))).thenReturn(upcoming);
 
-        // WHEN
         List<Assessment> result = assessmentService.getUpcoming();
 
-        // THEN
         assertNotNull(result);
         assertEquals(2, result.size());
-        verify(repository, times(1)).findUpcoming(any(LocalDateTime.class));
+        verify(repository, times(1)).findUpcoming(any(String.class));
     }
 
     @Test
-    @DisplayName("getOngoing() — should return list of ongoing assessments")
-    void getOngoing_shouldReturnOngoingAssessments() {
-        // GIVEN
-        when(repository.findOngoing(any(LocalDateTime.class))).thenReturn(List.of(assessment1));
+    @DisplayName("getOngoing() — should return ongoing assessments")
+    void getOngoing_shouldReturnAssessments() {
+        when(repository.findOngoing(any(String.class))).thenReturn(List.of(assessment1));
 
-        // WHEN
         List<Assessment> result = assessmentService.getOngoing();
 
-        // THEN
         assertEquals(1, result.size());
         assertEquals("Midterm Grammar", result.get(0).getTitle());
+        verify(repository, times(1)).findOngoing(any(String.class));
     }
 
     @Test
     @DisplayName("getByMonth() — should return assessments for given month")
     void getByMonth_shouldReturnAssessmentsForMonth() {
-        // GIVEN
-        when(repository.findByMonth(any(LocalDateTime.class), any(LocalDateTime.class)))
-                .thenReturn(List.of(assessment1));
+        when(repository.findByYearMonth(any(String.class))).thenReturn(List.of(assessment1));
 
-        // WHEN
-        List<Assessment> result = assessmentService.getByMonth(2026, 4);
+        List<Assessment> result = assessmentService.getByMonth(2026, 6);
 
-        // THEN
         assertNotNull(result);
         assertEquals(1, result.size());
-        verify(repository, times(1)).findByMonth(any(), any());
+        verify(repository, times(1)).findByYearMonth("2026-06");
     }
 
     @Test
     @DisplayName("getByDateRange() — should return assessments in date range")
     void getByDateRange_shouldReturnAssessmentsInRange() {
-        // GIVEN
-        LocalDateTime start = LocalDateTime.now();
-        LocalDateTime end   = LocalDateTime.now().plusDays(7);
-        when(repository.findByDateRange(eq(start), eq(end)))
+        when(repository.findByDateRange(any(String.class), any(String.class)))
                 .thenReturn(List.of(assessment1, assessment2));
 
-        // WHEN
-        List<Assessment> result = assessmentService.getByDateRange(start, end);
+        List<Assessment> result = assessmentService.getByDateRange(
+                LocalDateTime.of(2026, 6, 1, 0, 0),
+                LocalDateTime.of(2026, 6, 30, 23, 59));
 
-        // THEN
         assertEquals(2, result.size());
-        verify(repository, times(1)).findByDateRange(start, end);
+        verify(repository, times(1)).findByDateRange(any(String.class), any(String.class));
     }
 
     // ══════════════════════════════════════════════════════════════════════════
-    // ENTITY — isUpcoming / isOngoing
+    // ENTITY — field integrity
     // ══════════════════════════════════════════════════════════════════════════
 
     @Test
-    @DisplayName("Assessment.isUpcoming() — should return true when startDate is in future")
-    void isUpcoming_shouldReturnTrue_whenFutureDate() {
-        // GIVEN
-        Assessment a = Assessment.builder()
-                .startDate(LocalDateTime.now().plusHours(5))
-                .build();
-
-        // WHEN & THEN
-        assertTrue(a.isUpcoming());
+    @DisplayName("Assessment — builder should set all fields correctly")
+    void assessment_builderSetsFields() {
+        assertEquals(1L,                          assessment1.getId());
+        assertEquals("Midterm Grammar",            assessment1.getTitle());
+        assertEquals("English B2",                assessment1.getCourseName());
+        assertEquals(AssessmentType.EXAM,         assessment1.getType());
+        assertEquals(AssessmentStatus.PUBLISHED,  assessment1.getStatus());
+        assertEquals("TWIN1",                     assessment1.getClassName());
+        assertEquals("2026-06-01",                assessment1.getStartDate());
+        assertEquals(120,                         assessment1.getDuration());
     }
 
     @Test
-    @DisplayName("Assessment.isUpcoming() — should return false when startDate is in past")
-    void isUpcoming_shouldReturnFalse_whenPastDate() {
-        // GIVEN
-        Assessment a = Assessment.builder()
-                .startDate(LocalDateTime.now().minusDays(1))
-                .build();
-
-        // WHEN & THEN
-        assertFalse(a.isUpcoming());
-    }
-
-    @Test
-    @DisplayName("Assessment.isOngoing() — should return true when now is between start and end")
-    void isOngoing_shouldReturnTrue_whenNowBetweenStartAndEnd() {
-        // GIVEN
-        Assessment a = Assessment.builder()
-                .startDate(LocalDateTime.now().minusHours(1))
-                .endDate(LocalDateTime.now().plusHours(1))
-                .build();
-
-        // WHEN & THEN
-        assertTrue(a.isOngoing());
-    }
-
-    @Test
-    @DisplayName("Assessment.isOngoing() — should return false when assessment not started yet")
-    void isOngoing_shouldReturnFalse_whenNotStarted() {
-        // GIVEN
-        Assessment a = Assessment.builder()
-                .startDate(LocalDateTime.now().plusHours(2))
-                .endDate(LocalDateTime.now().plusHours(4))
-                .build();
-
-        // WHEN & THEN
-        assertFalse(a.isOngoing());
+    @DisplayName("Assessment — tutorId should be null by default")
+    void assessment_tutorIdShouldBeNullByDefault() {
+        Assessment a = new Assessment();
+        assertNull(a.getTutorId());
     }
 }

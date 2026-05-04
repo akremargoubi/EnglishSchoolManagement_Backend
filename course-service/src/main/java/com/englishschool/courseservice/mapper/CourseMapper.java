@@ -21,6 +21,7 @@ public class CourseMapper {
                 .isPublished(e.getIsPublished())
                 .ratingAvg(e.getRatingAvg())
                 .ratingCount(e.getRatingCount())
+                .tutorEmail(e.getTutorEmail())
                 .build();
     }
 

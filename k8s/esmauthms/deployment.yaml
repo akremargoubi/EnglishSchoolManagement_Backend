@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: esmauthms
+  namespace: esm
+  labels:
+    app: esmauthms
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: esmauthms
+  template:
+    metadata:
+      labels:
+        app: esmauthms
+    spec:
+      containers:
+        - name: esmauthms
+          image: akremargoubi/esmauthms:latest
+          ports:
+            - containerPort: 1999
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:postgresql://auth-db-svc:5432/esm_auth_db"
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: esmauthms-secret
+                  key: db-username
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: esmauthms-secret
+                  key: db-password
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: esmauthms-secret
+                  key: jwt-secret
+            - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+              value: "http://eureka-server:8761/eureka"
+            - name: EMAIL_SERVICE_URL
+              value: "http://messaging-service-svc:2001/api/emails/send"
+            - name: APP_STORAGE_S3_ENABLED
+              value: "false"
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "200m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          readinessProbe:
+            httpGet:
+              path: /api/actuator/health
+              port: 1999
+            initialDelaySeconds: 45
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /api/actuator/health
+              port: 1999
+            initialDelaySeconds: 60
+            periodSeconds: 20

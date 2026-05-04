@@ -34,6 +34,8 @@ public class AttendanceService {
         if (attendance != null) {
             attendance.setDate(attendanceDetails.getDate());
             attendance.setStatus(attendanceDetails.getStatus());
+            if (attendanceDetails.getStudentEmail() != null) attendance.setStudentEmail(attendanceDetails.getStudentEmail());
+            if (attendanceDetails.getCourseId() != null) attendance.setCourseId(attendanceDetails.getCourseId());
             return attendanceRepository.save(attendance);
         }
         return null;
@@ -42,5 +44,17 @@ public class AttendanceService {
     // Delete
     public void deleteAttendance(Long id) {
         attendanceRepository.deleteById(id);
+    }
+
+    public List<Attendance> getByStudentEmail(String studentEmail) {
+        return attendanceRepository.findByStudentEmail(studentEmail);
+    }
+
+    public List<Attendance> getByCourseId(Long courseId) {
+        return attendanceRepository.findByCourseId(courseId);
+    }
+
+    public List<Attendance> getByStudentEmailAndCourseId(String studentEmail, Long courseId) {
+        return attendanceRepository.findByStudentEmailAndCourseId(studentEmail, courseId);
     }
 }

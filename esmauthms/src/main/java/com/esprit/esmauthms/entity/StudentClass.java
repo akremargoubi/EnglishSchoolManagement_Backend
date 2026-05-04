@@ -21,11 +21,11 @@ public class StudentClass {
     private Long id;
 
     @Column(unique = true, nullable = false)
-    private String name;           // ex: "TWIN1", "DS3"
+    private String name;        // ex: "TWIN1", "DS3"
 
-    private String level;          // ex: "3ème année"
+    private String level;       // ex: "3ème année"
 
-    private String specialty;      // ex: "Informatique"
+    private String specialty;   // ex: "Informatique"
 
     private String description;
 
@@ -33,7 +33,11 @@ public class StudentClass {
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
-    // Relation : une classe a plusieurs étudiants
+    // The tutor (teacher) responsible for this class
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tutor_id")
+    private User tutor;
+
     @OneToMany(mappedBy = "studentClass", fetch = FetchType.LAZY)
     private List<User> students;
 }

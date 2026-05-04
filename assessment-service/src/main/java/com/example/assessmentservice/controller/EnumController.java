@@ -9,7 +9,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/enums")
-@CrossOrigin(origins = "http://localhost:4200")
 public class EnumController {
 
     @GetMapping("/types")

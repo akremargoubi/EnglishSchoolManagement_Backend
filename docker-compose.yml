@@ -17,6 +17,11 @@ services:
       timeout: 5s
       retries: 5
       start_period: 40s
+    deploy:
+      resources:
+        limits:
+          memory: 384m
+          cpus: '0.50'
     networks:
       - esm-net
 
@@ -40,6 +45,11 @@ services:
       timeout: 5s
       retries: 5
       start_period: 20s
+    deploy:
+      resources:
+        limits:
+          memory: 150m
+          cpus: '0.25'
     networks:
       - esm-net
 
@@ -63,6 +73,11 @@ services:
       timeout: 5s
       retries: 5
       start_period: 20s
+    deploy:
+      resources:
+        limits:
+          memory: 150m
+          cpus: '0.25'
     networks:
       - esm-net
 
@@ -86,6 +101,11 @@ services:
       timeout: 5s
       retries: 5
       start_period: 20s
+    deploy:
+      resources:
+        limits:
+          memory: 150m
+          cpus: '0.25'
     networks:
       - esm-net
 
@@ -109,6 +129,11 @@ services:
       timeout: 5s
       retries: 5
       start_period: 20s
+    deploy:
+      resources:
+        limits:
+          memory: 150m
+          cpus: '0.25'
     networks:
       - esm-net
 
@@ -132,6 +157,11 @@ services:
       timeout: 5s
       retries: 5
       start_period: 20s
+    deploy:
+      resources:
+        limits:
+          memory: 150m
+          cpus: '0.25'
     networks:
       - esm-net
 
@@ -155,6 +185,11 @@ services:
       timeout: 5s
       retries: 5
       start_period: 20s
+    deploy:
+      resources:
+        limits:
+          memory: 150m
+          cpus: '0.25'
     networks:
       - esm-net
 
@@ -177,6 +212,11 @@ services:
       timeout: 5s
       retries: 5
       start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 256m
+          cpus: '0.25'
     networks:
       - esm-net
 
@@ -199,6 +239,11 @@ services:
       timeout: 5s
       retries: 5
       start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 256m
+          cpus: '0.25'
     networks:
       - esm-net
 
@@ -221,6 +266,11 @@ services:
       timeout: 5s
       retries: 5
       start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 256m
+          cpus: '0.25'
     networks:
       - esm-net
 
@@ -243,6 +293,11 @@ services:
       timeout: 5s
       retries: 5
       start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 256m
+          cpus: '0.25'
     networks:
       - esm-net
 
@@ -281,6 +336,11 @@ services:
       APP_STORAGE_AVATAR_DIR: /app/avatars
     volumes:
       - auth-avatars:/app/avatars
+    deploy:
+      resources:
+        limits:
+          memory: 384m
+          cpus: '0.50'
     networks:
       - esm-net
 
@@ -315,6 +375,11 @@ services:
       MAILJET_SECRET_KEY: ${MAILJET_SECRET_KEY}
       MAILJET_SENDER_EMAIL: ${MAILJET_SENDER_EMAIL:-blink@akrem.dev}
       MAILJET_SENDER_NAME: ${MAILJET_SENDER_NAME:-ESM Platform}
+    deploy:
+      resources:
+        limits:
+          memory: 384m
+          cpus: '0.50'
     networks:
       - esm-net
 
@@ -347,6 +412,12 @@ services:
       EUREKA_INSTANCE_NONSECUREPORT: "8096"
       EUREKA_INSTANCE_NONSECUREPORTENABLED: "true"
       EUREKA_INSTANCE_INSTANCE_ID: resources-service:8096
+      JWT_SECRET: ${JWT_SECRET}
+    deploy:
+      resources:
+        limits:
+          memory: 384m
+          cpus: '0.50'
     networks:
       - esm-net
 
@@ -387,6 +458,13 @@ services:
       SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "true"
       SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "true"
       CERTIFICATE_SERVICE_URL: http://certificate-service:8097
+      AUTH_SERVICE_URL: http://auth-service:1999
+      JWT_SECRET: ${JWT_SECRET}
+    deploy:
+      resources:
+        limits:
+          memory: 384m
+          cpus: '0.50'
     networks:
       - esm-net
 
@@ -423,6 +501,11 @@ services:
       SPRING_MAIL_PASSWORD: placeholder
       SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "true"
       SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "true"
+    deploy:
+      resources:
+        limits:
+          memory: 384m
+          cpus: '0.50'
     networks:
       - esm-net
 
@@ -453,6 +536,11 @@ services:
       EUREKA_INSTANCE_NONSECUREPORT: "8085"
       EUREKA_INSTANCE_NONSECUREPORTENABLED: "true"
       EUREKA_INSTANCE_INSTANCE_ID: reporting-service:8085
+    deploy:
+      resources:
+        limits:
+          memory: 384m
+          cpus: '0.50'
     networks:
       - esm-net
 
@@ -490,6 +578,13 @@ services:
       EUREKA_INSTANCE_NONSECUREPORTENABLED: "true"
       EUREKA_INSTANCE_INSTANCE_ID: enrollment-service:8084
       COURSE_SERVICE_URL: http://course-service:8086
+      AUTH_SERVICE_URL: http://auth-service:1999/api
+      PAYMENT_SERVICE_URL: http://payment-service:8083
+    deploy:
+      resources:
+        limits:
+          memory: 384m
+          cpus: '0.50'
     networks:
       - esm-net
 
@@ -529,6 +624,11 @@ services:
       EUREKA_INSTANCE_NONSECUREPORT: "8086"
       EUREKA_INSTANCE_NONSECUREPORTENABLED: "true"
       EUREKA_INSTANCE_INSTANCE_ID: course-service:8086
+    deploy:
+      resources:
+        limits:
+          memory: 384m
+          cpus: '0.50'
     networks:
       - esm-net
 
@@ -563,6 +663,11 @@ services:
       EUREKA_INSTANCE_NONSECUREPORT: "8087"
       EUREKA_INSTANCE_NONSECUREPORTENABLED: "true"
       EUREKA_INSTANCE_INSTANCE_ID: attendance-service:8087
+    deploy:
+      resources:
+        limits:
+          memory: 384m
+          cpus: '0.50'
     networks:
       - esm-net
 
@@ -597,6 +702,11 @@ services:
       EUREKA_INSTANCE_NONSECUREPORT: "8082"
       EUREKA_INSTANCE_NONSECUREPORTENABLED: "true"
       EUREKA_INSTANCE_INSTANCE_ID: schedule-service:8082
+    deploy:
+      resources:
+        limits:
+          memory: 384m
+          cpus: '0.50'
     networks:
       - esm-net
 
@@ -620,6 +730,11 @@ services:
       timeout: 10s
       retries: 3
       start_period: 20s
+    deploy:
+      resources:
+        limits:
+          memory: 96m
+          cpus: '0.25'
 
 
   # ── 23. Gateway Service (ALWAYS LAST) ──────────────────────────────────────
@@ -643,6 +758,11 @@ services:
       EUREKA_CLIENT_INITIAL_INSTANCE_INFO_REPLICATION_INTERVAL_SECONDS: "5"
       SPRING_CLOUD_GATEWAY_DISCOVERY_LOCATOR_ENABLED: "true"
       SPRING_CLOUD_GATEWAY_DISCOVERY_LOCATOR_LOWER_CASE_SERVICE_ID: "true"
+    deploy:
+      resources:
+        limits:
+          memory: 384m
+          cpus: '0.50'
     networks:
       - esm-net
 

@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: messaging-service-svc
+  namespace: esm
+  labels:
+    app: messaging-service
+spec:
+  selector:
+    app: messaging-service
+  type: NodePort
+  ports:
+    - port: 2001
+      targetPort: 2001
+      nodePort: 32001

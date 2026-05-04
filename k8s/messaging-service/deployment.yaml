@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: messaging-service
+  namespace: esm
+  labels:
+    app: messaging-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: messaging-service
+  template:
+    metadata:
+      labels:
+        app: messaging-service
+    spec:
+      containers:
+        - name: messaging-service
+          image: akremargoubi/messaging-service:latest
+          ports:
+            - containerPort: 2001
+          env:
+            - name: SERVER_PORT
+              value: "2001"
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:postgresql://email-db-svc:5432/email_db"
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: messaging-secret
+                  key: db-username
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: messaging-secret
+                  key: db-password
+            - name: MAILJET_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: messaging-secret
+                  key: mailjet-api-key
+            - name: MAILJET_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: messaging-secret
+                  key: mailjet-secret-key
+            - name: MAILJET_SENDER_EMAIL
+              value: "blink@akrem.dev"
+            - name: MAILJET_SENDER_NAME
+              value: "ESM Platform"
+            - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+              value: "http://eureka-server:8761/eureka"
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "300m"
+          readinessProbe:
+            httpGet:
+              path: /api/actuator/health
+              port: 2001
+            initialDelaySeconds: 30
+            periodSeconds: 10

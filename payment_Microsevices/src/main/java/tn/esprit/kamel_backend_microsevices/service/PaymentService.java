@@ -77,4 +77,8 @@ public class PaymentService {
     public List<PaymentEntity> findByStudent(Long studentId) {
         return repository.findByStudentId(studentId);
     }
+
+    public List<PaymentEntity> findByStudentEmail(String email) {
+        return repository.findByStudentEmail(email);
+    }
 }

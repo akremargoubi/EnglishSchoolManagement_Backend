@@ -1,7 +1,10 @@
 package com.englishschool.enrollmentservice.service;
 
+import com.englishschool.enrollmentservice.client.AuthFeignClient;
 import com.englishschool.enrollmentservice.client.CourseDTO;
 import com.englishschool.enrollmentservice.client.CourseFeignClient;
+import com.englishschool.enrollmentservice.client.PaymentFeignClient;
+import feign.FeignException;
 import com.englishschool.enrollmentservice.dto.EnrollmentDTO;
 import com.englishschool.enrollmentservice.dto.MyCourseDTO;
 import com.englishschool.enrollmentservice.entity.Enrollment;
@@ -21,12 +24,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -40,6 +45,8 @@ public class EnrollmentService {
     private final StudentProgressRepository studentProgressRepository;
     private final IdempotencyKeyRepository idempotencyKeyRepository;
     private final CourseFeignClient courseFeignClient;
+    private final AuthFeignClient authFeignClient;
+    private final PaymentFeignClient paymentFeignClient;
     private final ProgressService progressService;
     private final ObjectMapper objectMapper;
 
@@ -72,11 +79,33 @@ public class EnrollmentService {
             }
             return existingDto;
         }
+        CourseDTO course = null;
         try {
-            courseFeignClient.getCourseById(dto.getCourseId());
+            course = courseFeignClient.getCourseById(dto.getCourseId());
         } catch (Exception ex) {
             log.warn("Course validation skipped: {}", ex.getMessage());
         }
+
+        boolean walletDeducted = false;
+        if (course != null
+                && course.getPrice() != null
+                && course.getPrice().compareTo(BigDecimal.ZERO) > 0
+                && dto.getUserUuid() != null && !dto.getUserUuid().isBlank()) {
+            try {
+                authFeignClient.deductWallet(
+                        dto.getUserUuid(),
+                        Map.of("amount", course.getPrice().doubleValue())
+                );
+                walletDeducted = true;
+            } catch (FeignException fe) {
+                String body = fe.contentUTF8();
+                if (body != null && body.contains("Insufficient balance")) {
+                    throw new IllegalStateException("Insufficient wallet balance to enroll in this course");
+                }
+                log.warn("Wallet deduction skipped (auth service unavailable): {}", fe.getMessage());
+            }
+        }
+
         Enrollment e = Enrollment.builder()
                 .userId(userId)
                 .studentName(dto.getStudentName())
@@ -84,6 +113,22 @@ public class EnrollmentService {
                 .status(dto.getStatus() != null ? dto.getStatus() : "active")
                 .build();
         e = repository.save(e);
+
+        if (walletDeducted && course != null) {
+            try {
+                paymentFeignClient.createPayment(Map.of(
+                        "amount", course.getPrice().doubleValue(),
+                        "method", "WALLET",
+                        "studentId", userId,
+                        "courseId", dto.getCourseId(),
+                        "enrollmentId", e.getId(),
+                        "status", "PAID"
+                ));
+            } catch (Exception payEx) {
+                log.warn("Payment record creation failed (non-fatal): {}", payEx.getMessage());
+            }
+        }
+
         EnrollmentDTO result = toDTO(e);
         if (keyHash != null) {
             try {

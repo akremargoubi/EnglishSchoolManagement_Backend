@@ -44,6 +44,9 @@ public class Course {
     @Column(name = "rating_count")
     private Integer ratingCount = 0;
 
+    @Column(name = "tutor_email", length = 255)
+    private String tutorEmail;
+
     public Course() {
     }
 
@@ -80,4 +83,6 @@ public class Course {
     public void setRatingAvg(java.math.BigDecimal ratingAvg) { this.ratingAvg = ratingAvg; }
     public Integer getRatingCount() { return ratingCount; }
     public void setRatingCount(Integer ratingCount) { this.ratingCount = ratingCount; }
+    public String getTutorEmail() { return tutorEmail; }
+    public void setTutorEmail(String tutorEmail) { this.tutorEmail = tutorEmail; }
 }

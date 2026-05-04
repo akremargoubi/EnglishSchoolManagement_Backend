@@ -32,6 +32,10 @@ public class Grade {
 
     private String comments;
 
+    // UUID of the tutor who assigned this grade — used for ownership checks
+    @Column(name = "graded_by_tutor_id")
+    private java.util.UUID gradedByTutorId;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime gradedAt;
 

@@ -16,6 +16,12 @@ public class Attendance {
     @Enumerated(EnumType.STRING)
     private AttendanceStatus status;
 
+    @Column(name = "student_email", length = 255)
+    private String studentEmail;
+
+    @Column(name = "course_id")
+    private Long courseId;
+
     // Constructors
     public Attendance() {}
 
@@ -33,4 +39,10 @@ public class Attendance {
 
     public AttendanceStatus getStatus() { return status; }
     public void setStatus(AttendanceStatus status) { this.status = status; }
+
+    public String getStudentEmail() { return studentEmail; }
+    public void setStudentEmail(String studentEmail) { this.studentEmail = studentEmail; }
+
+    public Long getCourseId() { return courseId; }
+    public void setCourseId(Long courseId) { this.courseId = courseId; }
 }

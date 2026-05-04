@@ -52,6 +52,7 @@ public class AuthService {
 
         String token = jwtService.generateToken(
                 user.getId(),
+                user.getEmail(),
                 user.getRole(),
                 user.getStatus(),
                 user.isEmailVerified(),
@@ -126,6 +127,7 @@ public class AuthService {
         // No 2FA => issue final token
         String token = jwtService.generateToken(
                 user.getId(),
+                user.getEmail(),
                 user.getRole(),
                 user.getStatus(),
                 user.isEmailVerified(),
@@ -173,6 +175,7 @@ public class AuthService {
 
         String token = jwtService.generateToken(
                 user.getId(),
+                user.getEmail(),
                 user.getRole(),
                 user.getStatus(),
                 user.isEmailVerified(),
