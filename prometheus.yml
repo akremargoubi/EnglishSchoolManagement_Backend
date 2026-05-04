@@ -1,0 +1,19 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+
+  - job_name: 'assessment-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['assessment-service:8081']
+        labels:
+          application: 'assessment-service'
+
+  - job_name: 'resources-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['resources-service:8096']
+        labels:
+          application: 'resources-service'
