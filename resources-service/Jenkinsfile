@@ -1,19 +1,16 @@
-@"
 pipeline {
     agent any
-
     environment {
         IMAGE_NAME = "englishschoolmanagement_backend-resources-service"
         NAMESPACE = "esm"
     }
-
     stages {
         stage('Checkout') {
             steps { checkout scm }
         }
         stage('Tests') {
             steps {
-                echo 'Tests skipped - no mvnw in resources-service'
+                echo 'Tests skipped'
             }
         }
         stage('Build Docker') {
@@ -25,13 +22,12 @@ pipeline {
         }
         stage('Deploy K8s') {
             steps {
-                echo 'Image prete - Deploy K8s fait manuellement'
+                echo 'Deploy K8s manuel'
             }
         }
     }
     post {
-        success { echo 'resources-service pipeline reussi !' }
-        failure { echo 'Echec du pipeline' }
+        success { echo 'resources-service OK' }
+        failure { echo 'Echec' }
     }
 }
-"@ | Set-Content resources-service/Jenkinsfile
