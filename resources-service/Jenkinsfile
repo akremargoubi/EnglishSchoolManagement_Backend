@@ -13,7 +13,7 @@ pipeline {
         stage('Tests') {
     steps {
         dir('resources-service') {
-            sh '/usr/share/maven/bin/mvn test -f pom.xml -DfailIfNoTests=false'
+            sh 'mvn test -f pom.xml -DfailIfNoTests=false'
         }
     }
 }
