@@ -1,3 +1,4 @@
+@"
 pipeline {
     agent any
 
@@ -22,14 +23,15 @@ pipeline {
                 }
             }
         }
-   stage('Deploy K8s') {
-    steps {
-        echo '✅ Image prête - Deploy K8s fait manuellement'
-        echo "Image: ${IMAGE_NAME}:latest"
+        stage('Deploy K8s') {
+            steps {
+                echo 'Image prete - Deploy K8s fait manuellement'
+            }
+        }
     }
-}
     post {
-        success { echo '✅ resources-service déployé !' }
-        failure { echo '❌ Échec du pipeline' }
+        success { echo 'resources-service pipeline reussi !' }
+        failure { echo 'Echec du pipeline' }
     }
 }
+"@ | Set-Content resources-service/Jenkinsfile
