@@ -10,7 +10,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/attendances")
-@CrossOrigin(origins = "*")
 public class AttendanceController {
 
     @Autowired
@@ -39,5 +38,20 @@ public class AttendanceController {
     @DeleteMapping("/{id}")
     public void deleteAttendance(@PathVariable Long id) {
         attendanceService.deleteAttendance(id);
+    }
+
+    @GetMapping("/student/{email}")
+    public List<Attendance> getByStudentEmail(@PathVariable String email) {
+        return attendanceService.getByStudentEmail(email);
+    }
+
+    @GetMapping("/course/{courseId}")
+    public List<Attendance> getByCourse(@PathVariable Long courseId) {
+        return attendanceService.getByCourseId(courseId);
+    }
+
+    @GetMapping("/student/{email}/course/{courseId}")
+    public List<Attendance> getByStudentAndCourse(@PathVariable String email, @PathVariable Long courseId) {
+        return attendanceService.getByStudentEmailAndCourseId(email, courseId);
     }
 }

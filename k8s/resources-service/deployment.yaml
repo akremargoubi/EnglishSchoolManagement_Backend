@@ -1,0 +1,90 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: resources-service
+  namespace: esm
+  labels:
+    app: resources-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: resources-service
+  template:
+    metadata:
+      labels:
+        app: resources-service
+    spec:
+      containers:
+        - name: resources-service
+          image: englishschoolmanagement_backend-resources-service:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8096
+          env:
+            - name: SERVER_PORT
+              value: "8096"
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:mysql://mysql:3306/english_school_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true"
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: resources-service-secret
+                  key: db-username
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: resources-service-secret
+                  key: db-password
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: resources-service-secret
+                  key: jwt-secret
+            - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+              value: "http://eureka-server:8761/eureka"
+            - name: AUTH_SERVICE_URL
+              value: "http://esmauthms-svc:1999"
+            - name: ASSESSMENT_SERVICE_URL
+              value: "http://assessment-service-svc:8081"
+            - name: APP_STORAGE_S3_ENABLED
+              value: "true"
+            - name: APP_STORAGE_S3_ENDPOINT
+              value: "https://esms3.dominnovate.com"
+            - name: APP_STORAGE_S3_REGION
+              value: "us-east-1"
+            - name: APP_STORAGE_S3_BUCKET
+              value: "englishschoolstorage"
+            - name: APP_STORAGE_S3_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: resources-service-secret
+                  key: s3-access-key
+            - name: APP_STORAGE_S3_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: resources-service-secret
+                  key: s3-secret-key
+            - name: APP_STORAGE_S3_PUBLIC_URL_PREFIX
+              value: "https://esms3.dominnovate.com/englishschoolstorage"
+            - name: APP_STORAGE_LOCAL_DIR
+              value: "uploads"
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "200m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8096
+            initialDelaySeconds: 45
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8096
+            initialDelaySeconds: 60
+            periodSeconds: 20

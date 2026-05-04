@@ -11,8 +11,6 @@ import tn.esprit.kamel_backend_microsevices.service.PaymentService;
 
 @RestController
 @RequestMapping("/api/payments")
-@CrossOrigin(origins = "http://localhost:4200")
-
 public class PaymentController {
     private static final String DEFAULT_RECEIVER = "kamel.hamdi@esprit.tn";
 
@@ -53,6 +51,11 @@ public class PaymentController {
     @GetMapping("/by-student/{studentId}")
     public ResponseEntity<List<PaymentEntity>> byStudent(@PathVariable Long studentId) {
         return ResponseEntity.ok(service.findByStudent(studentId));
+    }
+
+    @GetMapping("/by-student-email/{email}")
+    public ResponseEntity<List<PaymentEntity>> byStudentEmail(@PathVariable String email) {
+        return ResponseEntity.ok(service.findByStudentEmail(email));
     }
 
     @GetMapping("/test-email")

@@ -1,7 +1,12 @@
-C:\Users\Firas\Pidev\backend\resources-service\src\main\java\com\englishschool\resourcesservice\repository\LearningResourceRepository.java
-C:\Users\Firas\Pidev\backend\resources-service\src\main\java\com\englishschool\resourcesservice\config\FileConfig.java
-C:\Users\Firas\Pidev\backend\resources-service\src\main\java\com\englishschool\resourcesservice\entity\LearningResource.java
-C:\Users\Firas\Pidev\backend\resources-service\src\main\java\com\englishschool\resourcesservice\service\LearningResourceService.java
-C:\Users\Firas\Pidev\backend\resources-service\src\main\java\com\englishschool\resourcesservice\controller\LearningResourceController.java
-C:\Users\Firas\Pidev\backend\resources-service\src\main\java\com\englishschool\resourcesservice\service\Learningresourceservicetest.java
-C:\Users\Firas\Pidev\backend\resources-service\src\main\java\com\englishschool\resourcesservice\Application.java
+D:\PI 4 SAE INTEGRATION\EnglishSchoolManagement_Backend\resources-service\src\main\java\com\englishschool\resourcesservice\Application.java
+D:\PI 4 SAE INTEGRATION\EnglishSchoolManagement_Backend\resources-service\src\main\java\com\englishschool\resourcesservice\config\FileConfig.java
+D:\PI 4 SAE INTEGRATION\EnglishSchoolManagement_Backend\resources-service\src\main\java\com\englishschool\resourcesservice\config\SecurityConfig.java
+D:\PI 4 SAE INTEGRATION\EnglishSchoolManagement_Backend\resources-service\src\main\java\com\englishschool\resourcesservice\repository\LearningResourceRepository.java
+D:\PI 4 SAE INTEGRATION\EnglishSchoolManagement_Backend\resources-service\src\main\java\com\englishschool\resourcesservice\security\CallerContext.java
+D:\PI 4 SAE INTEGRATION\EnglishSchoolManagement_Backend\resources-service\src\main\java\com\englishschool\resourcesservice\controller\LearningResourceController.java
+D:\PI 4 SAE INTEGRATION\EnglishSchoolManagement_Backend\resources-service\src\main\java\com\englishschool\resourcesservice\service\LearningResourceService.java
+D:\PI 4 SAE INTEGRATION\EnglishSchoolManagement_Backend\resources-service\src\main\java\com\englishschool\resourcesservice\client\AuthServiceClient.java
+D:\PI 4 SAE INTEGRATION\EnglishSchoolManagement_Backend\resources-service\src\main\java\com\englishschool\resourcesservice\service\FileStorageService.java
+D:\PI 4 SAE INTEGRATION\EnglishSchoolManagement_Backend\resources-service\src\main\java\com\englishschool\resourcesservice\entity\LearningResource.java
+D:\PI 4 SAE INTEGRATION\EnglishSchoolManagement_Backend\resources-service\src\main\java\com\englishschool\resourcesservice\security\JwtAuthFilter.java
+D:\PI 4 SAE INTEGRATION\EnglishSchoolManagement_Backend\resources-service\src\main\java\com\englishschool\resourcesservice\security\JwtUtil.java

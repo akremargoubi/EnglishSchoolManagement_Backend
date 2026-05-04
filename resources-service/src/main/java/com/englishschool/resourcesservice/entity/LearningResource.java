@@ -1,8 +1,16 @@
 package com.englishschool.resourcesservice.entity;
 
 import jakarta.persistence.*;
+import lombok.*;
+
+import java.time.Instant;
+import java.util.UUID;
 
 @Entity
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class LearningResource {
 
     @Id
@@ -15,27 +23,15 @@ public class LearningResource {
     private Long assessmentId;
     private String fileUrl;
 
-    public Long getId() { return id; }
+    // UUID of the tutor who uploaded this resource — used for ownership checks
+    @Column(name = "uploaded_by")
+    private UUID uploadedBy;
 
-    public void setId(Long id) { this.id = id; }
+    @Column(name = "uploaded_at", updatable = false)
+    private Instant uploadedAt;
 
-    public String getTitle() { return title; }
-
-    public void setTitle(String title) { this.title = title; }
-
-    public String getType() { return type; }
-
-    public void setType(String type) { this.type = type; }
-
-    public boolean isPublished() { return published; }
-
-    public void setPublished(boolean published) { this.published = published; }
-
-    public Long getAssessmentId() { return assessmentId; }
-
-    public void setAssessmentId(Long assessmentId) { this.assessmentId = assessmentId; }
-
-    public String getFileUrl() { return fileUrl; }
-
-    public void setFileUrl(String fileUrl) { this.fileUrl = fileUrl; }
+    @PrePersist
+    public void prePersist() {
+        if (uploadedAt == null) uploadedAt = Instant.now();
+    }
 }

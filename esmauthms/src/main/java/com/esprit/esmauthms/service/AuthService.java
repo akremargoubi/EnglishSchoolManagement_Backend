@@ -31,6 +31,13 @@ public class AuthService {
         User user = User.builder()
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
+                // ✅ FIXED: persist all profile fields so users appear in search
+                .firstName(request.getFirstName())
+                .lastName(request.getLastName())
+                .cin(request.getCin())
+                .phoneNumber(request.getPhoneNumber())
+                .address(request.getAddress())
+                .role(request.getRole() != null ? request.getRole() : "USER")
                 .status("ACTIVE")
                 .isEmailVerified(false)
                 .twoFactorEnabled(false)
@@ -45,6 +52,7 @@ public class AuthService {
 
         String token = jwtService.generateToken(
                 user.getId(),
+                user.getEmail(),
                 user.getRole(),
                 user.getStatus(),
                 user.isEmailVerified(),
@@ -119,6 +127,7 @@ public class AuthService {
         // No 2FA => issue final token
         String token = jwtService.generateToken(
                 user.getId(),
+                user.getEmail(),
                 user.getRole(),
                 user.getStatus(),
                 user.isEmailVerified(),
@@ -166,6 +175,7 @@ public class AuthService {
 
         String token = jwtService.generateToken(
                 user.getId(),
+                user.getEmail(),
                 user.getRole(),
                 user.getStatus(),
                 user.isEmailVerified(),

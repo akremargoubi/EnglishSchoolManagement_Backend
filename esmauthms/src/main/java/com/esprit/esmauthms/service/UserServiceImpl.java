@@ -1,12 +1,14 @@
 package com.esprit.esmauthms.service;
 
 import com.esprit.esmauthms.dto.*;
+import com.esprit.esmauthms.entity.StudentClass;
 import com.esprit.esmauthms.entity.User;
 import com.esprit.esmauthms.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -14,10 +16,12 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailClient emailClient;
 
     private UserResponseDto toDto(User user) {
         UserResponseDto.UserResponseDtoBuilder builder = UserResponseDto.builder()
@@ -39,14 +43,20 @@ public class UserServiceImpl implements UserService {
                 .lastLoginAt(user.getLastLoginAt())
                 .deletedAt(user.getDeletedAt());
 
-        // 🆕 Mappe la classe si l'étudiant en a une
         if (user.getStudentClass() != null) {
+            StudentClass sc = user.getStudentClass();
+            String scName = (sc.getName() != null && !sc.getName().isBlank()) ? sc.getName() : null;
             builder
-                    .classId(user.getStudentClass().getId())
-                    .className(user.getStudentClass().getName())
-                    .classLevel(user.getStudentClass().getLevel())
-                    .classSpecialty(user.getStudentClass().getSpecialty());
+                    .classId(sc.getId())
+                    .className(scName)
+                    .classLevel(sc.getLevel())
+                    .classSpecialty(sc.getSpecialty());
         }
+        // className / classId / classLevel / classSpecialty remain null when no class is assigned
+
+        builder.walletBalance(user.getWalletBalance())
+               .parentEmail(user.getParentEmail())
+               .parentId(user.getParentId());
 
         return builder.build();
     }
@@ -106,15 +116,22 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Page<UserResponseDto> searchUsers(UserSearchCriteria criteria, Pageable pageable) {
-        String email     = criteria.getEmail()       != null ? criteria.getEmail()       : "";
-        String firstName = criteria.getFirstName()   != null ? criteria.getFirstName()   : "";
-        String lastName  = criteria.getLastName()    != null ? criteria.getLastName()    : "";
-        String cin       = criteria.getCin()         != null ? criteria.getCin()         : "";
-        String phone     = criteria.getPhoneNumber() != null ? criteria.getPhoneNumber() : "";
+        Page<User> page;
 
-        Page<User> page = userRepository
-                .findByEmailContainingIgnoreCaseAndFirstNameContainingIgnoreCaseAndLastNameContainingIgnoreCaseAndCinContainingAndPhoneNumberContaining(
-                        email, firstName, lastName, cin, phone, pageable);
+        if (criteria.getRole() != null && !criteria.getRole().isBlank()) {
+            // Role filter uses a dedicated query that also excludes soft-deleted users
+            // and eagerly fetches studentClass to avoid N+1 loads
+            page = userRepository.findByRoleAndDeletedAtIsNull(criteria.getRole(), pageable);
+        } else {
+            String email     = criteria.getEmail()       != null ? criteria.getEmail()       : "";
+            String firstName = criteria.getFirstName()   != null ? criteria.getFirstName()   : "";
+            String lastName  = criteria.getLastName()    != null ? criteria.getLastName()    : "";
+            String cin       = criteria.getCin()         != null ? criteria.getCin()         : "";
+            String phone     = criteria.getPhoneNumber() != null ? criteria.getPhoneNumber() : "";
+            page = userRepository
+                    .findByEmailContainingIgnoreCaseAndFirstNameContainingIgnoreCaseAndLastNameContainingIgnoreCaseAndCinContainingAndPhoneNumberContaining(
+                            email, firstName, lastName, cin, phone, pageable);
+        }
 
         return new PageImpl<>(
                 page.getContent().stream().map(this::toDto).collect(Collectors.toList()),
@@ -146,6 +163,44 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
         user.setAvatarUrl(avatarUrl);
         User saved = userRepository.save(user);
+        return toDto(saved);
+    }
+
+    @Override
+    public UserResponseDto topUpWallet(UUID targetUserId, Double amount) {
+        User user = userRepository.findById(targetUserId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        user.setWalletBalance(user.getWalletBalance() + amount);
+        return toDto(userRepository.save(user));
+    }
+
+    @Override
+    public UserResponseDto deductWallet(UUID userId, Double amount) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        if (user.getWalletBalance() < amount) {
+            throw new RuntimeException("Insufficient balance");
+        }
+        user.setWalletBalance(user.getWalletBalance() - amount);
+        return toDto(userRepository.save(user));
+    }
+
+    @Override
+    public UserResponseDto setParentEmail(UUID studentId, String parentEmail) {
+        User user = userRepository.findById(studentId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        user.setParentEmail(parentEmail);
+        User saved = userRepository.save(user);
+        emailClient.sendEmail(
+                parentEmail,
+                "You've been linked as a parent on ESM Platform",
+                "Hello,\n\nStudent " + user.getFirstName() + " " + user.getLastName()
+                + " has linked you as their parent on ESM Platform.\n\n"
+                + "To accept and access your child's information, please register at:\n"
+                + "http://localhost:4200/register\n\n"
+                + "Use this exact email address when registering so the link is recognized automatically.\n\n"
+                + "Best regards,\nESM Platform Team"
+        );
         return toDto(saved);
     }
 }

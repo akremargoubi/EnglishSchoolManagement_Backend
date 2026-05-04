@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs grep *)",
+      "Bash(awk -F'/' '{print $1}')",
+      "Bash(grep \"service$\")",
+      "Bash(find \"d:/PI 4 SAE INTEGRATION/Backend Services\" -type f -name \"*.java\" -exec grep -l \"parent\\\\|Parent\\\\|PARENT\\\\|guardian\\\\|Guardian\\\\|wallet\\\\|Wallet\\\\|credit\\\\|Credit\" {} \\\\;)",
+      "Bash(python3 -c ' *)",
+      "Bash(docker compose *)",
+      "Bash(docker exec *)"
+    ]
+  }
+}

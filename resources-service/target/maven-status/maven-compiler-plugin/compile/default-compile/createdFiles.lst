@@ -1,0 +1,13 @@
+com\englishschool\resourcesservice\repository\LearningResourceRepository.class
+com\englishschool\resourcesservice\config\SecurityConfig.class
+com\englishschool\resourcesservice\Application.class
+com\englishschool\resourcesservice\entity\LearningResource.class
+com\englishschool\resourcesservice\client\AuthServiceClient.class
+com\englishschool\resourcesservice\security\JwtAuthFilter.class
+com\englishschool\resourcesservice\entity\LearningResource$LearningResourceBuilder.class
+com\englishschool\resourcesservice\security\CallerContext.class
+com\englishschool\resourcesservice\controller\LearningResourceController.class
+com\englishschool\resourcesservice\service\LearningResourceService.class
+com\englishschool\resourcesservice\service\FileStorageService.class
+com\englishschool\resourcesservice\config\FileConfig.class
+com\englishschool\resourcesservice\security\JwtUtil.class

@@ -44,8 +44,18 @@ public class JwtService {
                                 String status,
                                 boolean emailVerified,
                                 boolean twoFactorEnabled) {
+        return generateToken(userId, null, role, status, emailVerified, twoFactorEnabled);
+    }
+
+    public String generateToken(UUID userId,
+                                String email,
+                                String role,
+                                String status,
+                                boolean emailVerified,
+                                boolean twoFactorEnabled) {
         return Jwts.builder()
                 .subject(userId.toString())
+                .claim("email", email)
                 .claim("role", role)
                 .claim("status", status)
                 .claim("emailVerified", emailVerified)
@@ -58,6 +68,10 @@ public class JwtService {
 
     public UUID extractUserId(String token) {
         return UUID.fromString(parseClaims(token).getSubject());
+    }
+
+    public String extractEmail(String token) {
+        return parseClaims(token).get("email", String.class);
     }
 
     public String extractRole(String token) {

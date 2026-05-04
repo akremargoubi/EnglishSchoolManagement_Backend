@@ -21,16 +21,17 @@ public class NotificationService {
 
     // ── In-app notifications ───────────────────────────────────────────────────
 
-    public List<Notification> getAll() {
-        return notificationRepository.findAllByOrderByCreatedAtDesc();
+    // User-scoped: own notifications + broadcasts (targetEmail IS NULL)
+    public List<Notification> getAll(String callerEmail) {
+        return notificationRepository.findForUser(callerEmail);
     }
 
-    public List<Notification> getUnread() {
-        return notificationRepository.findByReadFalseOrderByCreatedAtDesc();
+    public List<Notification> getUnread(String callerEmail) {
+        return notificationRepository.findUnreadForUser(callerEmail);
     }
 
-    public long countUnread() {
-        return notificationRepository.countByReadFalse();
+    public long countUnread(String callerEmail) {
+        return notificationRepository.countUnreadForUser(callerEmail);
     }
 
     public Notification markAsRead(Long id) {
@@ -40,8 +41,8 @@ public class NotificationService {
         return notificationRepository.save(n);
     }
 
-    public void markAllAsRead() {
-        List<Notification> unread = notificationRepository.findByReadFalseOrderByCreatedAtDesc();
+    public void markAllAsRead(String callerEmail) {
+        List<Notification> unread = notificationRepository.findUnreadForUser(callerEmail);
         unread.forEach(n -> n.setRead(true));
         notificationRepository.saveAll(unread);
     }

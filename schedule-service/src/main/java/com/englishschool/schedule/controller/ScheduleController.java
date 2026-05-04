@@ -13,7 +13,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/schedules")
-@CrossOrigin(origins = "*")
 public class ScheduleController {
 
     @Autowired
@@ -52,5 +51,15 @@ public class ScheduleController {
         LocalDate localDate = LocalDate.parse(date);
         WeatherData weather = weatherService.getWeatherForDay(dayOfWeek, localDate);
         return ResponseEntity.ok(weather);
+    }
+
+    @GetMapping("/course/{courseId}")
+    public List<Schedule> getByCourse(@PathVariable Long courseId) {
+        return scheduleService.getByCourseId(courseId);
+    }
+
+    @GetMapping("/class")
+    public List<Schedule> getByClass(@RequestParam String name) {
+        return scheduleService.getByClassName(name);
     }
 }

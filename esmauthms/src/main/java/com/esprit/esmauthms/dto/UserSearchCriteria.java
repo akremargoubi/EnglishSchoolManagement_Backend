@@ -10,4 +10,5 @@ public class UserSearchCriteria {
     private String lastName;
     private String cin;
     private String phoneNumber;
+    private String role;
 }

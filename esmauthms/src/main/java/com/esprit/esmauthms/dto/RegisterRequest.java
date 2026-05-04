@@ -13,4 +13,10 @@ public class RegisterRequest {
 
     @NotBlank
     private String password;
+    private String firstName;
+    private String lastName;
+    private String cin;
+    private String phoneNumber;
+    private String address;
+    private String role;
 }

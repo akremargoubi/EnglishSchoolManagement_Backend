@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: assessment-service-svc
+  namespace: esm
+  labels:
+    app: assessment-service
+spec:
+  selector:
+    app: assessment-service
+  type: NodePort
+  ports:
+    - port: 8081
+      targetPort: 8081
+      nodePort: 30081

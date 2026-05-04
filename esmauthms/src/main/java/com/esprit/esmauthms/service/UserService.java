@@ -21,4 +21,10 @@ public interface UserService {
     UserResponseDto updateCurrentUser(UUID currentUserId, UserSelfUpdateRequest request);
 
     UserResponseDto updateCurrentUserAvatar(UUID currentUserId, String avatarUrl);
+
+    UserResponseDto topUpWallet(UUID targetUserId, Double amount);
+
+    UserResponseDto deductWallet(UUID userId, Double amount);
+
+    UserResponseDto setParentEmail(UUID studentId, String parentEmail);
 }

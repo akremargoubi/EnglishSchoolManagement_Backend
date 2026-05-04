@@ -2,6 +2,7 @@ package com.example.assessmentservice.controller;
 
 import com.example.assessmentservice.entity.Notification;
 import com.example.assessmentservice.service.NotificationService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,50 +17,41 @@ public class NotificationController {
 
     private final NotificationService notificationService;
 
-    // GET all notifications
     @GetMapping
-    public ResponseEntity<List<Notification>> getAll() {
-        return ResponseEntity.ok(notificationService.getAll());
+    public ResponseEntity<List<Notification>> getAll(HttpServletRequest req) {
+        return ResponseEntity.ok(notificationService.getAll(callerEmail(req)));
     }
 
-    // GET unread notifications
     @GetMapping("/unread")
-    public ResponseEntity<List<Notification>> getUnread() {
-        return ResponseEntity.ok(notificationService.getUnread());
+    public ResponseEntity<List<Notification>> getUnread(HttpServletRequest req) {
+        return ResponseEntity.ok(notificationService.getUnread(callerEmail(req)));
     }
 
-    // GET unread count
     @GetMapping("/count")
-    public ResponseEntity<Map<String, Long>> getUnreadCount() {
-        return ResponseEntity.ok(Map.of("count", notificationService.countUnread()));
+    public ResponseEntity<Map<String, Long>> getUnreadCount(HttpServletRequest req) {
+        return ResponseEntity.ok(Map.of("count", notificationService.countUnread(callerEmail(req))));
     }
 
-    // PUT mark one as read
     @PutMapping("/{id}/read")
     public ResponseEntity<Notification> markAsRead(@PathVariable Long id) {
         return ResponseEntity.ok(notificationService.markAsRead(id));
     }
 
-    // PUT mark all as read
     @PutMapping("/read-all")
-    public ResponseEntity<Void> markAllAsRead() {
-        notificationService.markAllAsRead();
+    public ResponseEntity<Void> markAllAsRead(HttpServletRequest req) {
+        notificationService.markAllAsRead(callerEmail(req));
         return ResponseEntity.ok().build();
     }
 
-    // DELETE notification
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         notificationService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
-    // POST test notification (for dev)
-    @PostMapping("/test")
-    public ResponseEntity<String> testNotification(@RequestParam String email) {
-        notificationService.notifyAssessmentCreated(
-                "Test Assessment", "English B2", "EXAM", 1L, email
-        );
-        return ResponseEntity.ok("Notification sent to " + email);
+    // /test endpoint deliberately removed (was a dev-only endpoint exposing spam risk)
+
+    private String callerEmail(HttpServletRequest req) {
+        return (String) req.getAttribute("callerEmail");
     }
 }

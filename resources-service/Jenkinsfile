@@ -1,0 +1,38 @@
+pipeline {
+    agent any
+
+    environment {
+        IMAGE_NAME = "englishschoolmanagement_backend-resources-service"
+        NAMESPACE = "esm"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps { checkout scm }
+        }
+        stage('Tests') {
+            steps {
+                dir('resources-service') {
+                    bat 'mvnw.cmd test'
+                }
+            }
+        }
+        stage('Build Docker') {
+            steps {
+                dir('resources-service') {
+                    bat "docker build -t %IMAGE_NAME%:latest -f docker/Dockerfile ."
+                }
+            }
+        }
+        stage('Deploy K8s') {
+            steps {
+                bat "minikube image load %IMAGE_NAME%:latest"
+                bat "kubectl rollout restart deployment/resources-service -n %NAMESPACE%"
+            }
+        }
+    }
+    post {
+        success { echo '✅ resources-service déployé !' }
+        failure { echo '❌ Échec du pipeline' }
+    }
+}

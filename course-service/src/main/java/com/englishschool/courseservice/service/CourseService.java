@@ -106,6 +106,7 @@ public class CourseService {
         } else {
             c.setInstructor(null);
         }
+        if (dto.getTutorEmail() != null) c.setTutorEmail(dto.getTutorEmail());
         return mapper.toDTO(repository.save(c));
     }
 
@@ -123,6 +124,20 @@ public class CourseService {
         if (!repository.existsById(id))
             throw new ResourceNotFoundException("Course", id);
         repository.deleteById(id);
+    }
+
+    @Transactional
+    @CacheEvict(value = {CacheConfig.CACHE_COURSES, CacheConfig.CACHE_COURSE_BY_ID}, allEntries = true)
+    public CourseDTO assignTutor(Long courseId, String tutorEmail) {
+        Course c = repository.findById(courseId)
+                .orElseThrow(() -> new ResourceNotFoundException("Course", courseId));
+        c.setTutorEmail(tutorEmail);
+        return mapper.toDTO(repository.save(c));
+    }
+
+    public List<CourseDTO> getByTutorEmail(String tutorEmail) {
+        return repository.findByTutorEmail(tutorEmail)
+                .stream().map(mapper::toDTO).collect(Collectors.toList());
     }
 
     private Sort buildSort(String sortBy, String sortDir) {

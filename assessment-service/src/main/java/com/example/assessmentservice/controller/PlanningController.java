@@ -19,9 +19,8 @@ public class PlanningController {
     @GetMapping("/calendar")
     public List<Assessment> getCalendar(
             @RequestParam(defaultValue = "0") int year,
-            @RequestParam(defaultValue = "0") int month
-    ) {
-        if (year == 0) year   = LocalDateTime.now().getYear();
+            @RequestParam(defaultValue = "0") int month) {
+        if (year == 0)  year  = LocalDateTime.now().getYear();
         if (month == 0) month = LocalDateTime.now().getMonthValue();
         return service.getByMonth(year, month);
     }
@@ -39,8 +38,7 @@ public class PlanningController {
     @GetMapping("/range")
     public List<Assessment> getByRange(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end
-    ) {
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end) {
         return service.getByDateRange(start, end);
     }
 }
