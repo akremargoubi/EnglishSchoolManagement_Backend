@@ -48,7 +48,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 150m
+          memory: 400m
           cpus: '0.25'
     networks:
       - esm-net
@@ -76,7 +76,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 150m
+          memory: 400m
           cpus: '0.25'
     networks:
       - esm-net
@@ -104,7 +104,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 150m
+          memory: 400m
           cpus: '0.25'
     networks:
       - esm-net
@@ -132,7 +132,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 150m
+          memory: 400m
           cpus: '0.25'
     networks:
       - esm-net
@@ -160,7 +160,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 150m
+          memory: 400m
           cpus: '0.25'
     networks:
       - esm-net
@@ -188,7 +188,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 150m
+          memory: 400m
           cpus: '0.25'
     networks:
       - esm-net
@@ -199,10 +199,12 @@ services:
     image: mysql:8
     container_name: resources-db
     restart: unless-stopped
+    command: --innodb-buffer-pool-size=64m --innodb-log-buffer-size=16m
     ports:
       - "3307:3306"
     environment:
       MYSQL_ROOT_PASSWORD: root
+      MYSQL_ROOT_HOST: '%'
       MYSQL_DATABASE: resources_db
     volumes:
       - resources-db-data:/var/lib/mysql
@@ -215,7 +217,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 256m
+          memory: 400m
           cpus: '0.25'
     networks:
       - esm-net
@@ -226,10 +228,12 @@ services:
     image: mysql:8
     container_name: assessment-db
     restart: unless-stopped
+    command: --innodb-buffer-pool-size=64m --innodb-log-buffer-size=16m
     ports:
       - "3308:3306"
     environment:
       MYSQL_ROOT_PASSWORD: root
+      MYSQL_ROOT_HOST: '%'
       MYSQL_DATABASE: assessment_db
     volumes:
       - assessment-db-data:/var/lib/mysql
@@ -242,7 +246,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 256m
+          memory: 400m
           cpus: '0.25'
     networks:
       - esm-net
@@ -253,10 +257,12 @@ services:
     image: mysql:8
     container_name: payment-db
     restart: unless-stopped
+    command: --innodb-buffer-pool-size=64m --innodb-log-buffer-size=16m
     ports:
       - "3309:3306"
     environment:
       MYSQL_ROOT_PASSWORD: root
+      MYSQL_ROOT_HOST: '%'
       MYSQL_DATABASE: payment_db
     volumes:
       - payment-db-data:/var/lib/mysql
@@ -269,7 +275,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 256m
+          memory: 400m
           cpus: '0.25'
     networks:
       - esm-net
@@ -280,10 +286,12 @@ services:
     image: mysql:8
     container_name: reporting-db
     restart: unless-stopped
+    command: --innodb-buffer-pool-size=64m --innodb-log-buffer-size=16m
     ports:
       - "3310:3306"
     environment:
       MYSQL_ROOT_PASSWORD: root
+      MYSQL_ROOT_HOST: '%'
       MYSQL_DATABASE: reporting_db
     volumes:
       - reporting-db-data:/var/lib/mysql
@@ -296,7 +304,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 256m
+          memory: 400m
           cpus: '0.25'
     networks:
       - esm-net
@@ -735,6 +743,28 @@ services:
         limits:
           memory: 96m
           cpus: '0.25'
+
+
+  # ── 24. ML Service ────────────────────────────────────────────────────────
+  ml-service:
+    build: ./ML/ml-service
+    container_name: ml-service
+    ports:
+      - "8100:8100"
+    environment:
+      - ML_AUTH_HOST=auth-db
+      - ML_AUTH_PORT=5432
+      - ML_ENROLLMENT_HOST=enrollment-db
+      - ML_ENROLLMENT_PORT=5432
+      - ML_ATTENDANCE_HOST=attendance-db
+      - ML_ATTENDANCE_PORT=5432
+      - ML_ASSESSMENT_HOST=assessment-db
+      - ML_ASSESSMENT_PORT=3306
+      - ML_PAYMENT_HOST=payment-db
+      - ML_PAYMENT_PORT=3306
+    networks:
+      - esm-net
+    restart: unless-stopped
 
 
   # ── 23. Gateway Service (ALWAYS LAST) ──────────────────────────────────────
