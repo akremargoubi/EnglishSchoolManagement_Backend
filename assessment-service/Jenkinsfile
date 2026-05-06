@@ -18,7 +18,7 @@ pipeline {
         stage('SonarQube') {
             steps {
                 dir('assessment-service') {
-                    sh './mvnw sonar:sonar -Dsonar.projectKey=assessment-service -Dsonar.projectName="Assessment Service" -Dsonar.host.url=http://host.docker.internal:9000 -Dsonar.login=admin -Dsonar.password=firas123'
+                    sh './mvnw sonar:sonar -Dsonar.projectKey=assessment-service -Dsonar.projectName="Assessment Service" -Dsonar.host.url=http://192.168.65.1:9000 -Dsonar.login=admin -Dsonar.password=firas123'
                 }
             }
         }
@@ -31,7 +31,7 @@ pipeline {
         }
         stage('Deploy K8s') {
             steps {
-                echo '✅ Image prête - Deploy K8s fait '
+                echo '✅ Image prête - Deploy K8s fait'
                 echo "Image: ${IMAGE_NAME}:latest"
             }
         }
