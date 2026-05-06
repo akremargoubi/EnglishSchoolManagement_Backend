@@ -1,11 +1,9 @@
 pipeline {
     agent any
-
     environment {
         IMAGE_NAME = "englishschoolmanagement_backend-assessment-service"
         NAMESPACE = "esm"
     }
-
     stages {
         stage('Checkout') {
             steps { checkout scm }
@@ -25,21 +23,13 @@ pipeline {
             }
         }
         stage('Deploy K8s') {
-    steps {
-        sh '''
-            kubectl set image deployment/assessment-service \
-              assessment-service=englishschoolmanagement_backend-assessment-service:latest \
-              -n esm \
-              --server=https://192.168.49.2:8443 \
-              --certificate-authority=/var/jenkins_home/ca.crt \
-              --client-certificate=/var/jenkins_home/client.crt \
-              --client-key=/var/jenkins_home/client.key \
-              --insecure-skip-tls-verify=true
-        '''
+            steps {
+                sh "kubectl set image deployment/assessment-service assessment-service=${IMAGE_NAME}:latest -n esm --server=https://192.168.49.2:8443 --certificate-authority=/var/jenkins_home/ca.crt --client-certificate=/var/jenkins_home/client.crt --client-key=/var/jenkins_home/client.key"
+            }
+        }
     }
-}
     post {
-        success { echo '✅ assessment-service pipeline réussi !' }
-        failure { echo '❌ Échec du pipeline' }
+        success { echo 'assessment-service pipeline reussi !' }
+        failure { echo 'Echec du pipeline' }
     }
 }
