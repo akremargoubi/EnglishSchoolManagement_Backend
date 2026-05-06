@@ -1,0 +1,52 @@
+name: Frontend CI
+
+on:
+  push:
+    paths:
+      - 'esm-front-main/**'
+    branches: [ rayen ]
+  pull_request:
+    paths:
+      - 'esm-front-main/**'
+    branches: [ rayen ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: 'esm-front-main/package-lock.json'
+      
+      - name: Install dependencies
+        run: |
+          cd esm-front-main
+          npm ci
+      
+      - name: Run lint
+        run: |
+          cd esm-front-main
+          npm run lint --if-present
+      
+      - name: Run tests
+        run: |
+          cd esm-front-main
+          npm test -- --watch=false --browsers=ChromeHeadless
+      
+      - name: Build
+        run: |
+          cd esm-front-main
+          npm run build
+      
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: esm-front-main/dist/

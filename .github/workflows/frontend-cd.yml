@@ -1,0 +1,41 @@
+name: Frontend CD
+
+on:
+  push:
+    branches: [ rayen ]
+    paths:
+      - 'esm-front-main/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install dependencies
+        run: |
+          cd esm-front-main
+          npm ci
+      
+      - name: Build
+        run: |
+          cd esm-front-main
+          npm run build
+      
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./esm-front-main/dist
+          publish_branch: gh-pages
+          force_orphan: true
+      
+      - name: Log deployment
+        run: echo "Frontend deployed successfully!"

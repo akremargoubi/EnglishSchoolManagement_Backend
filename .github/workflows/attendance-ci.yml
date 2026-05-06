@@ -1,0 +1,49 @@
+name: Attendance Service CI
+
+on:
+  push:
+    paths:
+      - 'attendance-service/**'
+    branches: [ rayen ]
+  pull_request:
+    paths:
+      - 'attendance-service/**'
+    branches: [ rayen ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+      
+      - name: Build and test
+        run: |
+          cd attendance-service
+          mvn clean test
+      
+      - name: Run SonarQube analysis
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          cd attendance-service
+          mvn sonar:sonar -Dsonar.projectKey=attendance-service -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN
+      
+      - name: Build JAR
+        run: |
+          cd attendance-service
+          mvn package -DskipTests
+      
+      - name: Upload JAR artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: attendance-service-jar
+          path: attendance-service/target/*.jar
