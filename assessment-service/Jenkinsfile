@@ -15,6 +15,13 @@ pipeline {
                 }
             }
         }
+        stage('SonarQube') {
+            steps {
+                dir('assessment-service') {
+                    sh './mvnw sonar:sonar -Dsonar.projectKey=assessment-service -Dsonar.projectName="Assessment Service" -Dsonar.host.url=http://host.docker.internal:9000 -Dsonar.login=admin -Dsonar.password=firas123'
+                }
+            }
+        }
         stage('Build Docker') {
             steps {
                 dir('assessment-service') {
