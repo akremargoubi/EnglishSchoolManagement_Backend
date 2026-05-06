@@ -24,7 +24,12 @@ pipeline {
         }
         stage('Deploy K8s') {
             steps {
-                sh "kubectl --kubeconfig=/var/jenkins_home/kubeconfig.yaml set image deployment/assessment-service assessment-service=${IMAGE_NAME}:latest -n esm"
+                sh """
+                    cp /var/jenkins_home/ca.crt /tmp/ca.crt || true
+                    cp /var/jenkins_home/client.crt /tmp/client.crt || true
+                    cp /var/jenkins_home/client.key /tmp/client.key || true
+                    kubectl --kubeconfig=/var/jenkins_home/kubeconfig.yaml set image deployment/assessment-service assessment-service=${IMAGE_NAME}:latest -n esm || kubectl set image deployment/assessment-service assessment-service=${IMAGE_NAME}:latest -n esm --server=https://192.168.49.2:8443 --certificate-authority=/tmp/ca.crt --client-certificate=/tmp/client.crt --client-key=/tmp/client.key
+                """
             }
         }
     }
