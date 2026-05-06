@@ -22,7 +22,7 @@ pipeline {
         }
         stage('Deploy K8s') {
             steps {
-                echo 'Deploy K8s manuel'
+                sh 'kubectl --kubeconfig=/var/jenkins_home/kubeconfig.yaml set image deployment/resources-service resources-service=\:latest -n esm && kubectl --kubeconfig=/var/jenkins_home/kubeconfig.yaml rollout status deployment/resources-service -n esm'
             }
         }
     }
