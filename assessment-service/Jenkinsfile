@@ -18,7 +18,7 @@ pipeline {
         stage('SonarQube') {
             steps {
                 dir('assessment-service') {
-                    sh './mvnw sonar:sonar -Dsonar.projectKey=assessment-service -Dsonar.projectName="Assessment Service" -Dsonar.host.url=http://192.168.65.1:9000 -Dsonar.login=admin -Dsonar.password=firas123'
+                    sh './mvnw sonar:sonar -Dsonar.projectKey=assessment-service -Dsonar.projectName="Assessment Service" -Dsonar.host.url=http://172.17.0.2:9000 -Dsonar.login=admin -Dsonar.password=firas123'
                 }
             }
         }
