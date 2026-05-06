@@ -24,12 +24,13 @@ pipeline {
                 }
             }
         }
-    stage('Deploy K8s') {
-    steps {
-        sh 'kubectl --kubeconfig=/var/jenkins_home/kubeconfig.yaml set image deployment/assessment-service assessment-service=englishschoolmanagement_backend-assessment-service:latest -n esm'
-        sh 'kubectl --kubeconfig=/var/jenkins_home/kubeconfig.yaml rollout status deployment/assessment-service -n esm'
+        stage('Deploy K8s') {
+            steps {
+                sh 'kubectl --kubeconfig=/var/jenkins_home/kubeconfig.yaml set image deployment/assessment-service assessment-service=englishschoolmanagement_backend-assessment-service:latest -n esm'
+                sh 'kubectl --kubeconfig=/var/jenkins_home/kubeconfig.yaml rollout status deployment/assessment-service -n esm'
+            }
+        }
     }
-}
     post {
         success { echo '✅ assessment-service pipeline réussi !' }
         failure { echo '❌ Échec du pipeline' }
