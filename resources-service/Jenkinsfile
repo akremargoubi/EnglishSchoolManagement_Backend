@@ -13,6 +13,13 @@ pipeline {
                 echo 'Tests skipped'
             }
         }
+        stage('SonarQube') {
+            steps {
+                dir('resources-service') {
+                    sh 'mvn sonar:sonar -Dsonar.projectKey=resources-service -Dsonar.projectName="Resources Service" -Dsonar.host.url=http://localhost:9000 -Dsonar.login=admin -Dsonar.password=firas123'
+                }
+            }
+        }
         stage('Build Docker') {
             steps {
                 dir('resources-service') {
