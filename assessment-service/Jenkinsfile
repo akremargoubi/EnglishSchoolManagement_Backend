@@ -25,12 +25,19 @@ pipeline {
             }
         }
         stage('Deploy K8s') {
-            steps {
-                sh 'kubectl --kubeconfig=/var/jenkins_home/kubeconfig.yaml set image deployment/assessment-service assessment-service=englishschoolmanagement_backend-assessment-service:latest -n esm'
-                sh 'kubectl --kubeconfig=/var/jenkins_home/kubeconfig.yaml rollout status deployment/assessment-service -n esm'
-            }
-        }
+    steps {
+        sh '''
+            kubectl set image deployment/assessment-service \
+              assessment-service=englishschoolmanagement_backend-assessment-service:latest \
+              -n esm \
+              --server=https://192.168.49.2:8443 \
+              --certificate-authority=/var/jenkins_home/ca.crt \
+              --client-certificate=/var/jenkins_home/client.crt \
+              --client-key=/var/jenkins_home/client.key \
+              --insecure-skip-tls-verify=true
+        '''
     }
+}
     post {
         success { echo '✅ assessment-service pipeline réussi !' }
         failure { echo '❌ Échec du pipeline' }
