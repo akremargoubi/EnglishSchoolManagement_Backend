@@ -52,7 +52,16 @@
       "Bash(curl -s \"http://localhost:8100/ml/dso1/summary\")",
       "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(list\\(d.keys\\(\\)\\)\\)\")",
       "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('keys:', list\\(d.keys\\(\\)\\)\\); print\\('prob_dist:', d.get\\('probability_distribution'\\)\\)\")",
-      "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('first student keys:', list\\(d[0].keys\\(\\)\\) if d else 'empty'\\); print\\('trend sample:', d[0].get\\('trend'\\) if d else None\\)\")"
+      "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('first student keys:', list\\(d[0].keys\\(\\)\\) if d else 'empty'\\); print\\('trend sample:', d[0].get\\('trend'\\) if d else None\\)\")",
+      "Bash(wsl --list --verbose)",
+      "Bash(wsl -d Ubuntu -- bash -c \"docker --version && docker ps 2>&1\")",
+      "Bash(wsl -d Ubuntu -- bash -c \"docker volume create jenkins_home && docker run -d --name jenkins --restart=unless-stopped -p 8090:8080 -p 50000:50000 -v jenkins_home:/var/jenkins_home -v /var/run/docker.sock:/var/run/docker.sock jenkins/jenkins:lts 2>&1\")",
+      "Bash(wsl -d Ubuntu -- bash -c \"docker ps -a --filter name=jenkins --format 'ID: {{.ID}}\\\\nImage: {{.Image}}\\\\nStatus: {{.Status}}\\\\nPorts: {{.Ports}}\\\\nName: {{.Names}}'\")",
+      "Bash(wsl -d Ubuntu -- bash -c \"docker inspect jenkins --format '{{json .HostConfig.PortBindings}}'\")",
+      "Bash(wsl -d Ubuntu -- bash -c \"docker rm jenkins && docker run -d --name jenkins --restart=unless-stopped -p 8090:8080 -p 50000:50000 -v jenkins_home:/var/jenkins_home -v /var/run/docker.sock:/var/run/docker.sock jenkins/jenkins:lts 2>&1\")",
+      "Bash(wsl -d Ubuntu -- bash -c \"sleep 15 && docker ps --filter name=jenkins --format 'Status: {{.Status}} | Ports: {{.Ports}}'\")",
+      "Bash(wsl -d Ubuntu -- bash -c \"sleep 20 && docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword 2>&1\")",
+      "Bash(wsl -d Ubuntu -- bash -c \"docker volume inspect jenkins_home && docker exec jenkins ls /var/jenkins_home\")"
     ]
   }
 }
