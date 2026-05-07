@@ -18,7 +18,7 @@ pipeline {
         stage('SonarQube') {
             steps {
                 dir('assessment-service') {
-                    sh './mvnw sonar:sonar -Dsonar.projectKey=assessment-service -Dsonar.projectName="Assessment Service" -Dsonar.host.url=http://localhost:9000 -Dsonar.login=admin -Dsonar.password=firas123'
+                    sh './mvnw sonar:sonar -Dsonar.projectKey=assessment-service -Dsonar.projectName="Assessment Service" -Dsonar.host.url=http://localhost:9000 -Dsonar.login=admin -Dsonar.password=firas123 -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml'
                 }
             }
         }
