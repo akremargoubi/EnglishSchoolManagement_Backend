@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: email-db
+  namespace: esm
+spec:
+  serviceName: email-db-svc
+  replicas: 1
+  selector:
+    matchLabels:
+      app: email-db
+  template:
+    metadata:
+      labels:
+        app: email-db
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          env:
+            - name: POSTGRES_DB
+              value: email_db
+            - name: POSTGRES_USER
+              value: esm
+            - name: POSTGRES_PASSWORD
+              value: esmsecret
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+          readinessProbe:
+            tcpSocket:
+              port: 5432
+            initialDelaySeconds: 10
+            periodSeconds: 5
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 1Gi

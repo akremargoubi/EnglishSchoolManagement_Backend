@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: email-db-svc
+  namespace: esm
+spec:
+  selector:
+    app: email-db
+  ports:
+    - port: 5432
+      targetPort: 5432

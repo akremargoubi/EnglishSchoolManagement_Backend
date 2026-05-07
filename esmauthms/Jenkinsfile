@@ -77,6 +77,25 @@ pipeline {
                 }
             }
         }
+
+        stage('Deploy to K8s') {
+            steps {
+                sh """
+                    WORKSPACE_HOST=\$(echo \$WORKSPACE | sed 's|/var/jenkins_home|/var/lib/docker/volumes/jenkins_home/_data|')
+                    docker run --rm \
+                      --network host \
+                      -v /var/lib/docker/volumes/jenkins_home/_data/.kube:/root/.kube:ro \
+                      -v \${WORKSPACE_HOST}:/workspace:ro \
+                      bitnami/kubectl:1.29 \
+                      apply -f /workspace/k8s/${SERVICE_DIR}/
+                    docker run --rm \
+                      --network host \
+                      -v /var/lib/docker/volumes/jenkins_home/_data/.kube:/root/.kube:ro \
+                      bitnami/kubectl:1.29 \
+                      rollout restart deployment/${SERVICE_DIR} -n esm
+                """
+            }
+        }
     }
 
     post {

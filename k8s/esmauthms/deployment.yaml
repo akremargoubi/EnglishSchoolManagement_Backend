@@ -22,7 +22,9 @@ spec:
             - containerPort: 1999
           env:
             - name: SPRING_DATASOURCE_URL
-              value: "jdbc:postgresql://auth-db-svc:5432/esm_auth_db"
+              value: "jdbc:postgresql://auth-db-svc:5432/esmauthdb"
+            - name: SPRING_PROFILES_ACTIVE
+              value: "docker"
             - name: SPRING_DATASOURCE_USERNAME
               valueFrom:
                 secretKeyRef:
@@ -52,14 +54,12 @@ spec:
               memory: "512Mi"
               cpu: "500m"
           readinessProbe:
-            httpGet:
-              path: /api/actuator/health
-              port: 1999
-            initialDelaySeconds: 45
-            periodSeconds: 10
-          livenessProbe:
-            httpGet:
-              path: /api/actuator/health
+            tcpSocket:
               port: 1999
             initialDelaySeconds: 60
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 1999
+            initialDelaySeconds: 90
             periodSeconds: 20
