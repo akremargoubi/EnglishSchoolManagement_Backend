@@ -2,12 +2,10 @@ pipeline {
     agent any
 
     environment {
-        SERVICE_NAME   = 'esmauthms'
-        DOCKER_IMAGE   = "akremargoubi/esmauthms"
-        DOCKER_TAG     = "${BUILD_NUMBER}"
-        K8S_DEPLOYMENT = 'esmauthms'
-        K8S_NAMESPACE  = 'esm'
-        K8S_MANIFEST   = 'k8s/esmauthms'
+        SERVICE_NAME = 'esmauthms'
+        SERVICE_DIR  = 'esmauthms'
+        DOCKER_IMAGE = "akremargoubi/esmauthms"
+        DOCKER_TAG   = "${BUILD_NUMBER}"
     }
 
     stages {
@@ -15,61 +13,81 @@ pipeline {
         stage('Checkout') {
             steps {
                 checkout scm
-                echo "Build: ${BUILD_NUMBER}"
             }
         }
 
-        stage('Build & Test') {
+        stage('Install Dependencies') {
             steps {
-                dir('esmauthms') {
-                    sh 'chmod +x mvnw && ./mvnw clean verify -B'
+                dir("${SERVICE_DIR}") {
+                    sh 'chmod +x mvnw && ./mvnw dependency:resolve -B -q'
+                }
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                dir("${SERVICE_DIR}") {
+                    sh './mvnw test -B'
                 }
             }
             post {
                 always {
-                    junit allowEmptyResults: true, testResults: 'esmauthms/target/surefire-reports/*.xml'
+                    junit allowEmptyResults: true,
+                          testResults: "${SERVICE_DIR}/target/surefire-reports/*.xml"
                 }
             }
         }
 
-        stage('Docker Build & Push') {
+        stage('SonarQube Analysis') {
+            steps {
+                dir("${SERVICE_DIR}") {
+                    withSonarQubeEnv('SonarQube') {
+                        sh './mvnw sonar:sonar -B'
+                    }
+                }
+            }
+        }
+
+        stage('Quality Gate') {
+            steps {
+                timeout(time: 3, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+
+        stage('Docker Build') {
+            steps {
+                dir("${SERVICE_DIR}") {
+                    sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} -t ${DOCKER_IMAGE}:latest ."
+                }
+            }
+        }
+
+        stage('Docker Push') {
             steps {
                 withCredentials([usernamePassword(
-                        credentialsId: 'dockerhub-credentials',
-                        usernameVariable: 'DOCKER_USER',
-                        passwordVariable: 'DOCKER_PASS')]) {
-                    sh """
-                        cd esmauthms
-                        docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} .
-                        docker tag  ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_IMAGE}:latest
-                        echo "${DOCKER_PASS}" | docker login -u "${DOCKER_USER}" --password-stdin
-                        docker push ${DOCKER_IMAGE}:${DOCKER_TAG}
-                        docker push ${DOCKER_IMAGE}:latest
-                        docker logout
-                    """
-                }
-            }
-        }
-
-        stage('Deploy to Kubernetes') {
-            steps {
-                withCredentials([file(credentialsId: 'kubeconfig-wsl', variable: 'KUBECONFIG')]) {
-                    sh """
-                        export KUBECONFIG=${KUBECONFIG}
-                        kubectl apply -f ${K8S_MANIFEST}/ -n ${K8S_NAMESPACE}
-                        kubectl set image deployment/${K8S_DEPLOYMENT} \
-                            ${SERVICE_NAME}=${DOCKER_IMAGE}:${DOCKER_TAG} \
-                            -n ${K8S_NAMESPACE}
-                        kubectl rollout status deployment/${K8S_DEPLOYMENT} \
-                            -n ${K8S_NAMESPACE} --timeout=120s
-                    """
+                    credentialsId: 'dockerhub-credentials',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    sh 'echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin'
+                    sh "docker push ${DOCKER_IMAGE}:${DOCKER_TAG}"
+                    sh "docker push ${DOCKER_IMAGE}:latest"
                 }
             }
         }
     }
 
     post {
-        success { echo "Pipeline SUCCESS — ${SERVICE_NAME}:${DOCKER_TAG} deployed." }
-        failure { echo "Pipeline FAILED — check test reports above." }
+        always {
+            sh 'docker logout || true'
+        }
+        success {
+            echo "Pipeline SUCCESS — ${DOCKER_IMAGE}:${DOCKER_TAG} pushed."
+        }
+        failure {
+            echo "Pipeline FAILED on branch ${env.BRANCH_NAME}, build #${BUILD_NUMBER}."
+        }
     }
 }
