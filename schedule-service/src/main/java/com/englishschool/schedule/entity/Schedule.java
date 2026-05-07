@@ -16,14 +16,14 @@ public class Schedule {
     private LocalTime endTime;
     private String room;
 
-    @Column(name = "course_id")
-    private Long courseId;
-
-    @Column(name = "class_name", length = 100)
-    private String className;
-
     public Schedule() {}
 
+    public Schedule(String dayOfWeek, LocalTime startTime, LocalTime endTime, String room) {
+        this.dayOfWeek = dayOfWeek;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.room = room;
+    }
     public Long getScheduled() {
         return scheduled;
     }
@@ -63,10 +63,4 @@ public class Schedule {
     public void setRoom(String room) {
         this.room = room;
     }
-
-    public Long getCourseId() { return courseId; }
-    public void setCourseId(Long courseId) { this.courseId = courseId; }
-
-    public String getClassName() { return className; }
-    public void setClassName(String className) { this.className = className; }
 }

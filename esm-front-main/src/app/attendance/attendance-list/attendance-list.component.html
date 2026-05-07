@@ -1,0 +1,137 @@
+<div class="container mx-auto p-6">
+  <!-- Tabs -->
+  <div class="flex gap-2 mb-6 border-b border-gray-200">
+    <button (click)="activeTab = 'list'" 
+            [class.border-primary]="activeTab === 'list'"
+            class="px-6 py-3 text-sm font-medium border-b-2 transition-colors"
+            [class.text-primary]="activeTab === 'list'"
+            [class.text-gray-500]="activeTab !== 'list'">
+      📋 Attendance List
+    </button>
+    <button (click)="activeTab = 'analytics'" 
+            [class.border-primary]="activeTab === 'analytics'"
+            class="px-6 py-3 text-sm font-medium border-b-2 transition-colors"
+            [class.text-primary]="activeTab === 'analytics'"
+            [class.text-gray-500]="activeTab !== 'analytics'">
+      📊 Analytics Dashboard
+    </button>
+  </div>
+
+  <!-- Attendance List Tab -->
+  <div *ngIf="activeTab === 'list'">
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-bold text-darkindigo">Attendance Records</h1>
+      <button 
+        routerLink="/attendance/new"
+        class="bg-primary text-white px-4 py-2 rounded hover:bg-secondary"
+      >
+        + Add Attendance
+      </button>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <div class="bg-blue-50 rounded-lg p-4">
+        <p class="text-sm text-blue-600">Total Records</p>
+        <p class="text-2xl font-bold text-blue-700">{{attendances.length}}</p>
+      </div>
+      <div class="bg-green-50 rounded-lg p-4">
+        <p class="text-sm text-green-600">Present</p>
+        <p class="text-2xl font-bold text-green-700">{{totalPresent}}</p>
+      </div>
+      <div class="bg-yellow-50 rounded-lg p-4">
+        <p class="text-sm text-yellow-600">Late</p>
+        <p class="text-2xl font-bold text-yellow-700">{{totalLate}}</p>
+      </div>
+      <div class="bg-red-50 rounded-lg p-4">
+        <p class="text-sm text-red-600">Absent</p>
+        <p class="text-2xl font-bold text-red-700">{{totalAbsent}}</p>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white rounded-lg shadow p-4 mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <input type="text" 
+               [(ngModel)]="searchTerm" 
+               (input)="applyFilters()"
+               placeholder="Search..."
+               class="px-3 py-2 border rounded-lg">
+        
+        <select [(ngModel)]="selectedStatus" (change)="applyFilters()"
+                class="px-3 py-2 border rounded-lg">
+          <option value="all">All Status</option>
+          <option *ngFor="let status of statuses" [value]="status">{{status}}</option>
+        </select>
+        
+        <div class="flex gap-2">
+          <input type="date" 
+                 [(ngModel)]="selectedDate" 
+                 (change)="applyFilters()"
+                 class="flex-1 px-3 py-2 border rounded-lg">
+          <button (click)="resetFilters()" 
+                  class="px-3 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">
+            Reset
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+      <div *ngIf="loading" class="text-center py-8">
+        <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-primary border-t-transparent"></div>
+        <p class="mt-2">Loading...</p>
+      </div>
+
+      <table *ngIf="!loading" class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          <tr *ngFor="let attendance of filteredAttendances">
+            <td class="px-6 py-4 whitespace-nowrap">
+              {{ attendance.attended }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">{{ attendance.date }}</td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span [class]="'px-2 py-1 rounded-full text-xs ' + getStatusColor(attendance.status)">
+                <span>{{getStatusIcon(attendance.status)}}</span>
+                {{ attendance.status }}
+              </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap space-x-2">
+              <button 
+                [routerLink]="['/attendance/edit', attendance.attended]"
+                class="text-blue-600 hover:text-blue-900"
+              >
+                Edit
+              </button>
+              <button 
+                (click)="deleteAttendance(attendance.attended!)"
+                class="text-red-600 hover:text-red-900"
+              >
+                Delete
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="filteredAttendances.length === 0 && !loading">
+            <td colspan="4" class="px-6 py-4 text-center text-gray-500">
+              No attendance records found
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Analytics Tab -->
+  <div *ngIf="activeTab === 'analytics'">
+    <app-attendance-analytics></app-attendance-analytics>
+  </div>
+</div>

@@ -36,8 +36,6 @@ public class ScheduleService {
             schedule.setStartTime(scheduleDetails.getStartTime());
             schedule.setEndTime(scheduleDetails.getEndTime());
             schedule.setRoom(scheduleDetails.getRoom());
-            if (scheduleDetails.getCourseId() != null) schedule.setCourseId(scheduleDetails.getCourseId());
-            if (scheduleDetails.getClassName() != null) schedule.setClassName(scheduleDetails.getClassName());
             return scheduleRepository.save(schedule);
         }
         return null;
@@ -46,13 +44,5 @@ public class ScheduleService {
     // Delete
     public void deleteSchedule(Long id) {
         scheduleRepository.deleteById(id);
-    }
-
-    public List<Schedule> getByCourseId(Long courseId) {
-        return scheduleRepository.findByCourseId(courseId);
-    }
-
-    public List<Schedule> getByClassName(String className) {
-        return scheduleRepository.findByClassNameContainingIgnoreCase(className);
     }
 }

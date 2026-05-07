@@ -1,0 +1,102 @@
+<div class="bg-white rounded-2xl p-6 mb-8">
+  <!-- Header -->
+  <div class="flex justify-between items-center mb-6">
+    <div>
+      <h2 class="text-2xl font-bold text-darkindigo">📊 Attendance Analytics</h2>
+      <p class="text-gray-500 text-sm">Smart insights and student risk analysis</p>
+    </div>
+    <button (click)="exportReport()" 
+            class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 flex items-center gap-2">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+      </svg>
+      Export Report
+    </button>
+  </div>
+
+  <!-- Global Stats Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+    <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-4 text-white">
+      <p class="text-sm opacity-90">Overall Attendance</p>
+      <p class="text-3xl font-bold">{{globalRate}}%</p>
+      <p class="text-xs opacity-75 mt-2">Last 30 days</p>
+    </div>
+    <div class="bg-gradient-to-r from-red-500 to-red-600 rounded-xl p-4 text-white">
+      <p class="text-sm opacity-90">At Risk Students</p>
+      <p class="text-3xl font-bold">{{atRiskStudents}}</p>
+      <p class="text-xs opacity-75 mt-2">Need attention</p>
+    </div>
+    <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-4 text-white">
+      <p class="text-sm opacity-90">Improving Students</p>
+      <p class="text-3xl font-bold">{{improvingStudents}}</p>
+      <p class="text-xs opacity-75 mt-2">Trending up 📈</p>
+    </div>
+    <div class="bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl p-4 text-white">
+      <p class="text-sm opacity-90">Total Records</p>
+      <p class="text-3xl font-bold">{{attendances.length}}</p>
+      <p class="text-xs opacity-75 mt-2">Attendance entries</p>
+    </div>
+  </div>
+
+  <!-- Student Analytics Table -->
+  <div *ngIf="!loading" class="overflow-x-auto">
+    <h3 class="text-lg font-semibold text-gray-800 mb-4">Student Performance Analysis</h3>
+    <table class="w-full">
+      <thead class="bg-gray-50 rounded-lg">
+        <tr>
+          <th class="px-4 py-3 text-left text-sm font-semibold text-gray-600">Student</th>
+          <th class="px-4 py-3 text-left text-sm font-semibold text-gray-600">Level</th>
+          <th class="px-4 py-3 text-center text-sm font-semibold text-gray-600">P/L/A</th>
+          <th class="px-4 py-3 text-center text-sm font-semibold text-gray-600">Rate</th>
+          <th class="px-4 py-3 text-left text-sm font-semibold text-gray-600">Status</th>
+          <th class="px-4 py-3 text-center text-sm font-semibold text-gray-600">Trend</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        <tr *ngFor="let student of studentStats" class="hover:bg-gray-50 transition-colors">
+          <td class="px-4 py-3">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
+                {{student.studentName.charAt(0)}}
+              </div>
+              <span class="font-medium">{{student.studentName}}</span>
+            </div>
+          </td>
+          <td class="px-4 py-3">
+            <span class="px-2 py-1 bg-gray-100 rounded-full text-xs">{{student.level}}</span>
+          </td>
+          <td class="px-4 py-3 text-center text-sm">
+            <span class="text-green-600 font-medium">{{student.presentCount}}</span> /
+            <span class="text-yellow-600">{{student.lateCount}}</span> /
+            <span class="text-red-600">{{student.absentCount}}</span>
+          </td>
+          <td class="px-4 py-3 text-center">
+            <div class="flex items-center gap-2">
+              <div class="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div class="h-full rounded-full" 
+                     [class.bg-green-500]="student.attendanceRate >= 80"
+                     [class.bg-yellow-500]="student.attendanceRate >= 60 && student.attendanceRate < 80"
+                     [class.bg-red-500]="student.attendanceRate < 60"
+                     [style.width.%]="student.attendanceRate"></div>
+              </div>
+              <span class="text-sm font-medium">{{student.attendanceRate}}%</span>
+            </div>
+          </td>
+          <td class="px-4 py-3">
+            <span [class]="'px-2 py-1 rounded-full text-xs ' + getRiskColor(student.riskLevel)">
+              {{getRiskMessage(student.riskLevel, student.attendanceRate)}}
+            </span>
+          </td>
+          <td class="px-4 py-3 text-center text-xl">
+            {{getTrendIcon(student.trend)}}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div *ngIf="loading" class="text-center py-8">
+    <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-primary border-t-transparent"></div>
+    <p class="mt-2 text-gray-500">Analyzing attendance data...</p>
+  </div>
+</div>

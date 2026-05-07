@@ -1,0 +1,94 @@
+<div class="min-h-screen">
+
+  <div class="min-h-80 mb-12 flex items-center justify-center bg-violet-50 font-bold text-gray-800 relative">
+    <h1 class="text-4xl">Sign Up</h1>
+    <img src="assets\images\herobanner__1.png"  alt="" class="absolute -bottom-10 left-10 animate-bounce ">
+    <img src="assets\images\herobanner__2.png"  alt="" class="absolute -bottom-10 right-50 scale-50 lg:scale-150">
+    <img src="assets\images\herobanner__3.png"  alt="" class="absolute top-5 left-50">
+  </div>
+
+  <div class="w-full max-w-xl mx-auto p-12 bg-white flex flex-col items-center rounded shadow-sm">
+    <h2 class="text-2xl font-bold mb-6 text-center">Sign Up</h2>
+
+    <form class="space-y-6 container w-full">
+      
+      <div class="flex flex-col">
+        <label for="fullName" class="mb-2 text-sm font-medium text-gray-700">
+          Full Name
+        </label>
+        <input
+          id="fullName"
+          name="fullName"
+          type="text"
+          class="w-full border py-4 px-3 rounded border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary"
+        />
+      </div>
+
+      <div class="flex flex-col">
+        <label for="email" class="mb-2 text-sm font-medium text-gray-700">
+          Email Address
+        </label>
+        <input
+          id="email"
+          name="email"
+          type="email"
+          class="w-full border py-4 px-3 rounded border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary"
+        />
+      </div>
+
+      <div class="flex flex-col">
+        <label for="password" class="mb-2 text-sm font-medium text-gray-700">
+          Password
+        </label>
+        <input
+          id="password"
+          name="password"
+          type="password"
+          class="w-full border py-4 px-3 rounded border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary"
+        />
+      </div>
+
+      <div class="flex flex-col">
+        <label for="repeatPassword" class="mb-2 text-sm font-medium text-gray-700">
+          Repeat Password
+        </label>
+        <input
+          id="repeatPassword"
+          name="repeatPassword"
+          type="password"
+          class="w-full border py-4 px-3 rounded border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary"
+        />
+      </div>
+
+      <button
+        type="submit"
+        class="w-full bg-primary text-white py-4 rounded hover:opacity-90 transition"
+      >
+        Create Account
+      </button>
+
+      <!-- Secondary Links -->
+      <div class="flex flex-col items-center gap-3 pt-4 text-sm text-gray-600">
+
+        <div>
+          Already have an account?
+          <a routerLink="/signin" class="text-primary font-medium hover:underline">
+            Sign in
+          </a>
+        </div>
+
+        <div class="flex gap-4">
+          <a routerLink="/forgot-password" class="hover:underline">
+            Forgot password?
+          </a>
+          <a routerLink="/support" class="hover:underline">
+            Need help?
+          </a>
+        </div>
+
+      </div>
+
+    </form>
+  </div>
+
+</div>

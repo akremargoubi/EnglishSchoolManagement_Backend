@@ -1,0 +1,30 @@
+/*src/styles.css*/
+@import "tailwindcss";
+
+/* =========================
+   THEME TOKENS
+   ========================= */
+@theme {
+  --color-body: #222222;
+  --color-body-bg: #fbfbfb;
+  --color-body-bg-1: #F7F7F7;
+  --color-white: #ffffff;
+  --color-heading: #222222;
+  --color-content: #5F6C76;
+  --color-primary: #5F2DED;
+  --color-secondary: #F2277E;
+  --color-black: #000000;
+  --color-darkblack: #0C0E2B;
+  --color-border: #eeeeee;
+  --color-indigo: #B13BFF;
+  --color-deepgreen: #133344;
+  --color-deepblue: #505975;
+  --color-deepred: #DC164D;
+  --color-sky: #03A9F4;
+  --color-yellow: #FF912C;
+  --color-blue: #2864FF;
+  --color-darkindigo: #170F2F;
+  --radius-sm: 4px;
+  --radius-md: 10px;
+  --radius-lg: 20px;
+}

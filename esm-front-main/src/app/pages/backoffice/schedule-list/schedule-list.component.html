@@ -1,0 +1,122 @@
+<div class="bg-white rounded-2xl border border-gray-200 p-6">
+  <!-- Header -->
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+    <div>
+      <h3 class="text-xl font-semibold text-gray-900">Schedule Management</h3>
+      <p class="text-sm text-gray-500">Manage class schedules and room assignments</p>
+    </div>
+    <button routerLink="/backoffice/schedule/new"
+            class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 flex items-center gap-2">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+      </svg>
+      Add Schedule
+    </button>
+  </div>
+
+  <!-- Stats -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <div class="bg-gray-50 rounded-lg p-4">
+      <p class="text-sm text-gray-600">Total Classes</p>
+      <p class="text-2xl font-bold text-gray-900">{{totalClasses}}</p>
+    </div>
+    <div class="bg-blue-50 rounded-lg p-4">
+      <p class="text-sm text-blue-600">Active Rooms</p>
+      <p class="text-2xl font-bold text-blue-700">{{activeRooms}}</p>
+    </div>
+    <div class="bg-green-50 rounded-lg p-4">
+      <p class="text-sm text-green-600">Total Capacity</p>
+      <p class="text-2xl font-bold text-green-700">{{totalCapacity}}</p>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <select [(ngModel)]="selectedDay" (change)="applyFilters()"
+            class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-primary">
+      <option value="all">All Days</option>
+      <option *ngFor="let day of days" [value]="day">{{day}}</option>
+    </select>
+
+    <select [(ngModel)]="selectedLevel" (change)="applyFilters()"
+            class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-primary">
+      <option value="all">All Levels</option>
+      <option *ngFor="let level of levels" [value]="level">{{level}}</option>
+    </select>
+
+    <input type="text" 
+           [(ngModel)]="searchRoom" 
+           (input)="applyFilters()"
+           placeholder="Search room..."
+           class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-primary">
+  </div>
+
+  <!-- Reset Filter Button -->
+  <div class="flex justify-end mb-4">
+    <button (click)="resetFilters()" 
+            class="text-sm text-primary hover:underline flex items-center gap-1">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+      </svg>
+      Reset Filters & Refresh
+    </button>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="text-center py-8">
+    <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-primary border-t-transparent"></div>
+  </div>
+
+  <!-- Table -->
+  <div *ngIf="!loading" class="overflow-x-auto">
+    <table class="w-full">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600">Day</th>
+          <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600">Time</th>
+          <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600">Course</th>
+          <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600">Level</th>
+          <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600">Room</th>
+          <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600">Teacher</th>
+          <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600">Students</th>
+          <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-200">
+        <tr *ngFor="let s of filteredSchedules">
+          <td class="px-4 py-3">
+            <span [class]="'px-2 py-1 rounded-full text-xs ' + getDayClass(s.dayOfWeek)">
+              {{s.dayOfWeek.substring(0,3)}}
+            </span>
+          </td>
+          <td class="px-4 py-3">{{s.startTime.substring(0,5)}} - {{s.endTime.substring(0,5)}}</td>
+          <td class="px-4 py-3 font-medium text-gray-900">{{s.courseName}}</td>
+          <td class="px-4 py-3">
+            <span class="px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs">{{s.level}}</span>
+          </td>
+          <td class="px-4 py-3">{{s.room}}</td>
+          <td class="px-4 py-3">{{s.teacher}}</td>
+          <td class="px-4 py-3">
+            <div class="flex items-center gap-2">
+              <span class="text-sm">{{s.enrolledStudents}}/{{s.maxStudents}}</span>
+              <div class="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div class="h-full bg-primary" [style.width.%]="(s.enrolledStudents/s.maxStudents)*100"></div>
+              </div>
+            </div>
+          </td>
+          <td class="px-4 py-3">
+            <button [routerLink]="['/backoffice/schedule/edit', s.id]"
+                    class="text-primary hover:underline text-sm mr-3">Edit</button>
+            <button (click)="deleteSchedule(s.id)"
+                    class="text-red-500 hover:underline text-sm">Delete</button>
+          </td>
+        </tr>
+        <tr *ngIf="filteredSchedules.length === 0">
+          <td colspan="8" class="px-4 py-8 text-center text-gray-500">
+            No schedules found
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

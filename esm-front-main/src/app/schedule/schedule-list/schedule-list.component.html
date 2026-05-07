@@ -1,0 +1,263 @@
+<main class="min-h-screen bg-body-bg px-4 py-10">
+  <div class="mx-0 lg:mx-12">
+    
+    <!-- Header Section -->
+    <section class="rounded-2xl bg-darkindigo text-white px-6 py-10 sm:px-10 md:py-14 mb-8">
+      <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+        <div class="space-y-4">
+          <p class="text-sm md:text-lg font-semibold tracking-wide text-indigo uppercase">
+            Schedule Management
+          </p>
+          <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight">
+            Class Schedules
+          </h1>
+          <p class="text-base sm:text-lg text-body-bg-1/90 max-w-2xl">
+            Manage all your class schedules, timings, and room assignments in one place.
+          </p>
+        </div>
+        <button routerLink="/schedule/new"
+                class="inline-flex items-center justify-center rounded-md bg-primary px-8 py-4 text-lg font-semibold text-white hover:bg-secondary transition-colors whitespace-nowrap">
+          + Add New Schedule
+        </button>
+      </div>
+    </section>
+
+    <!-- Stats Cards -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div class="rounded-2xl bg-white p-6 flex items-center gap-4 shadow-sm">
+        <img src="assets/images/counter__1.png" alt="total" class="w-12 h-12 object-contain">
+        <div>
+          <h2 class="text-3xl font-bold text-darkindigo">{{totalSchedules}}</h2>
+          <p class="text-gray-500 text-sm uppercase tracking-wide">Total Schedules</p>
+        </div>
+      </div>
+      
+      <div class="rounded-2xl bg-white p-6 flex items-center gap-4 shadow-sm">
+        <img src="assets/images/counter__2.png" alt="weekly" class="w-12 h-12 object-contain">
+        <div>
+          <h2 class="text-3xl font-bold text-darkindigo">{{weekdayClasses}}</h2>
+          <p class="text-gray-500 text-sm uppercase tracking-wide">Weekday Classes</p>
+        </div>
+      </div>
+      
+      <div class="rounded-2xl bg-white p-6 flex items-center gap-4 shadow-sm">
+        <img src="assets/images/counter__3.png" alt="weekend" class="w-12 h-12 object-contain">
+        <div>
+          <h2 class="text-3xl font-bold text-darkindigo">{{weekendClasses}}</h2>
+          <p class="text-gray-500 text-sm uppercase tracking-wide">Weekend Classes</p>
+        </div>
+      </div>
+      
+      <div class="rounded-2xl bg-white p-6 flex items-center gap-4 shadow-sm">
+        <img src="assets/images/counter__4.png" alt="rooms" class="w-12 h-12 object-contain">
+        <div>
+          <h2 class="text-3xl font-bold text-darkindigo">{{activeRooms}}</h2>
+          <p class="text-gray-500 text-sm uppercase tracking-wide">Active Rooms</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Filters Section -->
+<section class="bg-white rounded-2xl p-6 mb-8 border border-gray-100">
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    
+    <!-- Filter by Day -->
+    <div>
+      <label class="block text-sm font-semibold text-gray-600 mb-2">Filter by Day</label>
+      <select [(ngModel)]="selectedDay" 
+              (change)="applyFilters()"
+              class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-primary">
+        <option value="all">All Days</option>
+        <option *ngFor="let day of days" [value]="day">{{day}}</option>
+      </select>
+    </div>
+    
+    <!-- Search by Room -->
+    <div>
+      <label class="block text-sm font-semibold text-gray-600 mb-2">Search Room</label>
+      <input type="text" 
+             [(ngModel)]="searchRoom" 
+             (input)="applyFilters()"
+             placeholder="Enter room number..."
+             class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-primary">
+    </div>
+    
+    <!-- Reset Button -->
+    <div class="flex items-end">
+      <button (click)="resetFilters()" 
+              class="w-full px-4 py-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors flex items-center justify-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+        Reset Filters & Refresh
+      </button>
+    </div>
+  </div>
+</section>
+
+    <!-- Loading State -->
+    <div *ngIf="loading" class="text-center py-12">
+      <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-primary border-t-transparent"></div>
+      <p class="mt-4 text-content">Loading schedules...</p>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="error" class="bg-red-50 text-red-600 p-4 rounded-lg text-center">
+      {{error}}
+    </div>
+
+    <!-- Schedule Calendar -->
+    <div *ngIf="!loading && !error && schedules.length > 0" class="space-y-4 overflow-x-auto">
+      
+      <!-- Days Header -->
+      <div class="grid grid-cols-8 gap-2 min-w-[800px]">
+        <div class="text-center font-semibold text-darkindigo"></div>
+        <div *ngFor="let day of days" 
+             class="bg-darkindigo text-white py-3 rounded-lg text-sm font-semibold text-center">
+          {{day.substring(0,3)}}
+        </div>
+      </div>
+
+      <!-- In the schedule card for each day -->
+
+      
+      <!-- Time Slots -->
+      <div class="relative min-w-[800px]">
+        
+        <!-- Background grid lines -->
+        <div class="absolute inset-0 grid grid-cols-8 gap-2 pointer-events-none">
+          <div></div>
+          <div *ngFor="let day of days" class="border-l border-gray-200 h-full"></div>
+        </div>
+        
+        <!-- Time slots -->
+        <div class="relative">
+          <div *ngFor="let slot of timeSlots" 
+               class="grid grid-cols-8 gap-2 border-b border-gray-100 min-h-[40px]">
+            <div class="text-xs text-content flex items-center justify-end pr-4 font-medium">
+              {{slot}}
+            </div>
+            <div *ngFor="let day of days" class="relative"></div>
+          </div>
+          
+          <!-- Classes positioned by time -->
+          <div class="absolute inset-0 grid grid-cols-8 gap-2 pointer-events-none">
+            <div></div>
+            <div *ngFor="let day of days; let colIndex = index" 
+                 class="relative pointer-events-auto" 
+                 [style.gridColumn]="colIndex + 2">
+              
+              <div *ngFor="let schedule of getFilteredSchedulesForDay(day)" 
+     [style.top]="getTimePosition(schedule.startTime)"
+     [style.height]="getTimeHeight(schedule.startTime, schedule.endTime)"
+     class="absolute left-1 right-1 bg-primary/10 border-l-4 border-primary rounded p-2 hover:bg-primary/20 transition-colors overflow-hidden group z-10">
+                <div class="text-xs font-semibold truncate">Room {{schedule.room}}</div>
+                <div class="text-[10px] opacity-75">{{formatTime(schedule.startTime)}} - {{formatTime(schedule.endTime)}}</div>
+                
+                <!-- Action buttons -->
+                <div class="absolute top-1 right-1 hidden group-hover:flex gap-1">
+                  <button [routerLink]="['/schedule/edit', schedule.scheduled]"
+                          class="p-1 bg-white rounded shadow-sm hover:text-primary"
+                          (click)="$event.stopPropagation()">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                  </button>
+                  <button (click)="deleteSchedule(schedule.scheduled!); $event.stopPropagation()"
+                          class="p-1 bg-white rounded shadow-sm hover:text-red-500">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!loading && !error && schedules.length === 0" 
+         class="text-center py-16 bg-body-bg rounded-2xl">
+      <img src="assets/images/placeholder.png" alt="empty" class="w-20 h-20 mx-auto opacity-50">
+      <p class="text-xl text-content mt-4">No schedules found</p>
+      <p class="text-sm text-content/70 mt-2">Click the "Add New Schedule" button to create your first schedule.</p>
+      <button routerLink="/schedule/new"
+              class="mt-6 inline-flex items-center justify-center rounded-md bg-primary px-6 py-3 text-white font-semibold hover:bg-secondary transition-colors">
+        + Create First Schedule
+      </button>
+    </div>
+
+
+    <!-- Advanced Features Section -->
+<div *ngIf="!loading && !error && schedules.length > 0" class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+  
+  <!-- Conflicts Card -->
+  <div class="rounded-2xl bg-white p-6 shadow-sm border border-border">
+    <div class="flex items-center gap-3 mb-4">
+      <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+        <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+      </div>
+      <div>
+        <p class="text-sm font-semibold text-gray-500">Schedule Conflicts</p>
+        <p class="text-2xl font-bold text-darkindigo">{{getConflicts().length}}</p>
+      </div>
+    </div>
+    <div *ngIf="getConflicts().length > 0" class="text-sm text-red-600 bg-red-50 p-2 rounded">
+      ⚠️ {{getConflicts().length}} conflict(s) detected
+    </div>
+  </div>
+  
+  <!-- Room Usage Card -->
+  <div class="rounded-2xl bg-white p-6 shadow-sm border border-border">
+    <div class="flex items-center gap-3 mb-4">
+      <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+        <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+        </svg>
+      </div>
+      <div>
+        <p class="text-sm font-semibold text-gray-500">Most Used Room</p>
+        <p class="text-2xl font-bold text-darkindigo">{{getMostUsedRoom()}}</p>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Quick Stats Card -->
+  <div class="rounded-2xl bg-white p-6 shadow-sm border border-border">
+    <div class="flex items-center gap-3 mb-4">
+      <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
+        <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+        </svg>
+      </div>
+      <div>
+        <p class="text-sm font-semibold text-gray-500">Peak Day</p>
+        <p class="text-2xl font-bold text-darkindigo">
+          {{getPeakDay()}}
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<article *ngFor="let schedule of filteredSchedules" 
+         class="rounded-2xl bg-body-bg border border-border overflow-hidden hover:shadow-lg transition-shadow">
+  
+  <!-- Add weather widget at the top of each day card -->
+  <app-weather-widget 
+    [dayOfWeek]="schedule.dayOfWeek" 
+    [date]="getNextDateForDay(schedule.dayOfWeek)">
+  </app-weather-widget>
+  
+  <!-- Rest of your schedule card content -->
+  ...
+</article>
+
+<!-- Add this method too -->
+
+  </div>
+</main>

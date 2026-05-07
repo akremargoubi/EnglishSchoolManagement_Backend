@@ -1,0 +1,119 @@
+<div class="bg-white rounded-2xl border border-gray-200 p-6">
+  <!-- Header -->
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+    <div>
+      <h3 class="text-xl font-semibold text-gray-900">Attendance Management</h3>
+      <p class="text-sm text-gray-500">Track and manage daily attendance</p>
+    </div>
+    <button routerLink="/backoffice/attendance/new"
+        class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 flex items-center gap-2">
+  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+  </svg>
+  Mark Attendance
+</button>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+    <div class="bg-gray-50 rounded-lg p-4">
+      <p class="text-sm text-gray-600">Total Records</p>
+      <p class="text-2xl font-bold text-gray-900">{{attendances.length}}</p>
+    </div>
+    <div class="bg-green-50 rounded-lg p-4">
+      <p class="text-sm text-green-600">Present</p>
+      <p class="text-2xl font-bold text-green-700">{{totalPresent}}</p>
+    </div>
+    <div class="bg-yellow-50 rounded-lg p-4">
+      <p class="text-sm text-yellow-600">Late</p>
+      <p class="text-2xl font-bold text-yellow-700">{{totalLate}}</p>
+    </div>
+    <div class="bg-red-50 rounded-lg p-4">
+      <p class="text-sm text-red-600">Absent</p>
+      <p class="text-2xl font-bold text-red-700">{{totalAbsent}}</p>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+    <input type="text" 
+           [(ngModel)]="searchTerm" 
+           (input)="applyFilters()"
+           placeholder="Search student..."
+           class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-primary">
+
+    <select [(ngModel)]="selectedLevel" (change)="applyFilters()"
+            class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-primary">
+      <option value="all">All Levels</option>
+      <option *ngFor="let level of levels" [value]="level">{{level}}</option>
+    </select>
+
+    <select [(ngModel)]="selectedStatus" (change)="applyFilters()"
+            class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-primary">
+      <option value="all">All Status</option>
+      <option *ngFor="let status of statuses" [value]="status">{{status}}</option>
+    </select>
+
+    <input type="date" 
+           [(ngModel)]="selectedDate" 
+           (change)="applyFilters()"
+           class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-primary">
+  </div>
+
+  <!-- Reset Filter -->
+  <div class="flex justify-end mb-4">
+    <button (click)="resetFilters()" class="text-sm text-primary hover:underline">Reset Filters</button>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="text-center py-8">
+    <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-primary border-t-transparent"></div>
+  </div>
+
+  <!-- Table -->
+  <div *ngIf="!loading" class="overflow-x-auto">
+    <table class="w-full">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600">Student</th>
+          <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600">Level</th>
+          <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600">Date</th>
+          <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600">Status</th>
+          <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600">Teacher</th>
+          <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-200">
+        <tr *ngFor="let a of filteredAttendances">
+          <td class="px-4 py-3">
+            <div>
+              <p class="font-medium text-gray-900">{{a.studentName}}</p>
+              <p class="text-xs text-gray-500">ID: STD-{{a.studentId}}</p>
+            </div>
+          </td>
+          <td class="px-4 py-3">
+            <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">{{a.classLevel}}</span>
+          </td>
+          <td class="px-4 py-3">{{a.date}}</td>
+          <td class="px-4 py-3">
+            <span [class]="'px-2 py-1 rounded-full text-xs ' + getStatusClass(a.status)">
+              {{a.status}}
+            </span>
+          </td>
+          <td class="px-4 py-3">{{a.teacher}}</td>
+          <td class="px-4 py-3">
+            <button [routerLink]="['/backoffice/attendance/edit', a.id]"
+        class="text-primary hover:underline text-sm mr-3">Edit</button>
+            <button (click)="deleteAttendance(a.id)"
+                    class="text-red-500 hover:underline text-sm">Delete</button>
+          </td>
+        </tr>
+        <tr *ngIf="filteredAttendances.length === 0">
+          <td colspan="6" class="px-4 py-8 text-center text-gray-500">
+            No attendance records found
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

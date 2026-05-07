@@ -1,0 +1,60 @@
+<header class="bg-white border-b border-border sticky top-0 z-50">
+  <nav class="mx-0 lg:mx-12  px-4 sm:px-6 lg:px-8">
+    <div class="flex h-28 items-center justify-between">
+      <!-- Logo (left side) -->
+      <div class="shrink-0">
+            <img 
+            src="assets\images\logo.png" 
+            alt="App Logo" 
+            class="h-12 w-auto"
+            />
+      </div>
+
+      <!-- Desktop Menu (center) - hidden on mobile -->
+      <div class="hidden md:flex md:items-center md:gap-12 text-lg">
+        <a href="#" class="text-content hover:text-primary transition-colors duration-200">Menu1</a>
+        <a href="#" class="text-content hover:text-primary transition-colors duration-200">Menu2</a>
+        <a href="#" class="text-content hover:text-primary transition-colors duration-200">Menu3</a>
+        <a href="#" class="text-content hover:text-primary transition-colors duration-200">Menu4</a>
+      </div>
+
+      <!-- Login Button (right side on desktop) -->
+      <div class="hidden md:block">
+        <button
+          routerLink="/signin"
+          class="bg-primary text-white px-8 text-lg py-4 cursor-pointer rounded-sm hover:bg-white hover:text-primary hover:border-primary border transition-colors duration-200"
+        >
+          Log In
+        </button>
+      </div>
+
+
+      <!-- Mobile menu button -->
+      <div class="md:hidden">
+        <button 
+          type="button" 
+          class="text-content hover:text-primary"
+          id="mobile-menu-button"
+          aria-expanded="false"
+          aria-controls="mobile-menu">
+          <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile menu (hidden by default) -->
+    <div class="hidden md:hidden" id="mobile-menu">
+      <div class="space-y-1 px-2 pb-3 pt-2">
+        <a href="#" class="block px-3 py-2 text-content hover:text-primary hover:bg-body-bg-1 rounded-md transition-colors duration-200">Menu1</a>
+        <a href="#" class="block px-3 py-2 text-content hover:text-primary hover:bg-body-bg-1 rounded-md transition-colors duration-200">Menu2</a>
+        <a href="#" class="block px-3 py-2 text-content hover:text-primary hover:bg-body-bg-1 rounded-md transition-colors duration-200">Menu3</a>
+        <a href="#" class="block px-3 py-2 text-content hover:text-primary hover:bg-body-bg-1 rounded-md transition-colors duration-200">Menu4</a>
+        <button class="w-full mt-4 bg-primary text-white px-6 py-2 rounded-md hover:bg-secondary transition-colors duration-200">
+          Log In
+        </button>
+      </div>
+    </div>
+  </nav>
+</header>
