@@ -83,7 +83,7 @@ pipeline {
             steps {
                 sh "kubectl apply -f k8s/${SERVICE_DIR}/"
                 sh "kubectl rollout restart deployment/${SERVICE_DIR} -n esm"
-                sh "kubectl rollout status deployment/${SERVICE_DIR} -n esm --timeout=120s"
+                sh "kubectl rollout status deployment/${SERVICE_DIR} -n esm --timeout=300s"
             }
         }
     }

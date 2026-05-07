@@ -53,18 +53,18 @@ spec:
               value: "http://eureka-server:8761/eureka"
           resources:
             requests:
-              memory: "128Mi"
-              cpu: "100m"
-            limits:
               memory: "256Mi"
-              cpu: "300m"
+              cpu: "200m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
           readinessProbe:
             tcpSocket:
               port: 2001
-            initialDelaySeconds: 45
+            initialDelaySeconds: 120
             periodSeconds: 10
           livenessProbe:
             tcpSocket:
               port: 2001
-            initialDelaySeconds: 60
+            initialDelaySeconds: 150
             periodSeconds: 20
