@@ -61,7 +61,10 @@
       "Bash(wsl -d Ubuntu -- bash -c \"docker rm jenkins && docker run -d --name jenkins --restart=unless-stopped -p 8090:8080 -p 50000:50000 -v jenkins_home:/var/jenkins_home -v /var/run/docker.sock:/var/run/docker.sock jenkins/jenkins:lts 2>&1\")",
       "Bash(wsl -d Ubuntu -- bash -c \"sleep 15 && docker ps --filter name=jenkins --format 'Status: {{.Status}} | Ports: {{.Ports}}'\")",
       "Bash(wsl -d Ubuntu -- bash -c \"sleep 20 && docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword 2>&1\")",
-      "Bash(wsl -d Ubuntu -- bash -c \"docker volume inspect jenkins_home && docker exec jenkins ls /var/jenkins_home\")"
+      "Bash(wsl -d Ubuntu -- bash -c \"docker volume inspect jenkins_home && docker exec jenkins ls /var/jenkins_home\")",
+      "Bash(git stash *)",
+      "PowerShell(cloudflared --version 2>$null)",
+      "PowerShell(winget list cloudflared 2>$null)"
     ]
   }
 }
